@@ -424,7 +424,7 @@ async def collection(ctx):
     await ctx.send(embed=embed, view=view)
 
 # Remplace par ton vrai ID utilisateur Discord
-OWNER_ID = 123456789012345678  # ← Remplace ceci par ton propre ID
+OWNER_ID = 1368269432517951598  # ← Remplace ceci par ton propre ID
 
 @bot.command(name="addcredits")
 async def add_credits(ctx, montant: int = 1000):
