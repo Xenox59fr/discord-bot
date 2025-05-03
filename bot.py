@@ -69,8 +69,6 @@ def load_credits(fichier):
     except FileNotFoundError:
         return {}
 
-        return {}
-
 def save_credits(fichier, data):
     with open(fichier, "w") as f:
         json.dump(data, f, indent=4)
