@@ -298,7 +298,7 @@ class Saison0StartView(View):
         await interaction.response.defer(ephemeral=True)
 
         # Préparer les cartes
-        dossier = "C:\\Users\\FlowUP\\Documents\\discord-bot\\SAISON_0"
+        dossier = os.path.join("cartes", "SAISON_0")
         cartes = []
 
         for fichier in os.listdir(dossier):
