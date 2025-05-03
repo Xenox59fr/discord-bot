@@ -349,9 +349,18 @@ class Saison0PaginationView(View):
         super().__init__(timeout=180)
         self.user = user  # Celui qui a cliqué (pas forcément ctx.author !)
         self.embeds = embeds
-        self.cartes = cartes  # On garde juste nom/chemin, pas de discord.File ouvert !
+        self.cartes = cartes  # Liste de tuples (nom, chemin)
         self.cartes_par_page = cartes_par_page
         self.page = 0
+
+    def get_fichiers_page(self):
+        """Retourne les fichiers (discord.File) de la page courante."""
+        debut = self.page * self.cartes_par_page
+        fin = (self.page + 1) * self.cartes_par_page
+        return [
+            discord.File(chemin, filename=nom)
+            for nom, chemin in self.cartes[debut:fin]
+        ]
 
     @discord.ui.button(label="⏪", style=discord.ButtonStyle.secondary)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -365,11 +374,7 @@ class Saison0PaginationView(View):
         await interaction.response.defer(ephemeral=True)
 
         self.page = (self.page - 1) % len(self.embeds)
-
-        fichiers_page = [
-            discord.File(chemin, filename=nom)
-            for nom, chemin in self.cartes[self.page*self.cartes_par_page:(self.page+1)*self.cartes_par_page]
-        ]
+        fichiers_page = self.get_fichiers_page()
 
         await interaction.edit_original_response(
             embed=self.embeds[self.page],
@@ -389,11 +394,7 @@ class Saison0PaginationView(View):
         await interaction.response.defer(ephemeral=True)
 
         self.page = (self.page + 1) % len(self.embeds)
-
-        fichiers_page = [
-            discord.File(chemin, filename=nom)
-            for nom, chemin in self.cartes[self.page*self.cartes_par_page:(self.page+1)*self.cartes_par_page]
-        ]
+        fichiers_page = self.get_fichiers_page()
 
         await interaction.edit_original_response(
             embed=self.embeds[self.page],
@@ -401,6 +402,16 @@ class Saison0PaginationView(View):
             view=self
         )
 
+    async def on_timeout(self):
+        """Supprime tous les fichiers une fois la vue expirée."""
+        chemins_uniques = {chemin for _, chemin in self.cartes}
+        for chemin in chemins_uniques:
+            try:
+                os.remove(chemin)
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                print(f"Erreur lors de la suppression de {chemin} : {e}")
 # ----- Commande principale -----
 @bot.command()
 async def collection(ctx):
