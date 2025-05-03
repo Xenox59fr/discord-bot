@@ -12,8 +12,8 @@ from keep_alive import keep_alive
 keep_alive()
 
 
-load_dotenv()
-TOKEN = os.getenv("TOKEN")
+load_dotenv()  # charge les variables depuis .env (ou équivalent chez Glitch)
+TOKEN = os.getenv("TOKEN")  # récupère la variable TOKEN
 
 
 # Configuration du bot
@@ -411,4 +411,5 @@ async def collection(ctx):
         color=discord.Color.blurple()
     )
     await ctx.send(embed=embed, view=view)
-bot.run(TOKEN)
+
+bot.run(TOKEN)  # lance le bot
