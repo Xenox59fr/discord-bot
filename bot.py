@@ -7,6 +7,10 @@ import os
 import random
 import datetime
 from dotenv import load_dotenv
+from keep_alive import keep_alive
+
+keep_alive()
+
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -409,3 +413,4 @@ async def collection(ctx):
         color=discord.Color.blurple()
     )
     await ctx.send(embed=embed, view=view)
+client.run(TOKEN)
