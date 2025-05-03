@@ -412,4 +412,7 @@ async def collection(ctx):
     )
     await ctx.send(embed=embed, view=view)
 
+print(f"Token: {TOKEN}")  # Ajoute cette ligne juste avant bot.run()
+
+
 bot.run(TOKEN)  # lance le bot
