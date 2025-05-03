@@ -1,0 +1,9 @@
+# Ignore tout sauf le code du bot
+/AppData/
+/node_modules/
+/.env
+*.log
+*.db
+*.pyc
+__pycache__/
+.DS_Store
