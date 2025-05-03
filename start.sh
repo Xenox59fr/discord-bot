@@ -1,3 +1,5 @@
-#!/bin/bash
-pip install -r requirements.txt
-python bot.py
+{
+  "scripts": {
+    "start": "python3 bot.py"
+  }
+}
