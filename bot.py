@@ -148,7 +148,7 @@ async def buy(ctx, nombre: int = 1):
     }
 
     for carte in cartes_tirees:
-        chemin_image = os.path.join("C:\\Users\\FlowUP\\Documents\\cartes\\SAISON_0", carte["image"])
+        chemin_image = os.path.join("C:\Users\FlowUP\Documents\discord-bot\SAISON_0", carte["image"])
         if not os.path.isfile(chemin_image):
             await ctx.send(f"⚠️ Erreur : l'image {carte['image']} n'existe pas.")
             continue
@@ -298,7 +298,7 @@ class Saison0StartView(View):
         await interaction.response.defer(ephemeral=True)
 
         # Préparer les cartes
-        dossier = "C:\\Users\\FlowUP\\Documents\\cartes\\SAISON_0"
+        dossier = "C:\Users\FlowUP\Documents\discord-bot\SAISON_0"
         cartes = []
 
         for fichier in os.listdir(dossier):
