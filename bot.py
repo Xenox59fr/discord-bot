@@ -13,7 +13,7 @@ keep_alive()
 
 
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("TOKEN")
 
 
 # Configuration du bot
