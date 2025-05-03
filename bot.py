@@ -413,4 +413,4 @@ async def collection(ctx):
         color=discord.Color.blurple()
     )
     await ctx.send(embed=embed, view=view)
-client.run(TOKEN)
+bot.run(TOKEN)
