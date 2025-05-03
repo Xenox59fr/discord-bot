@@ -423,6 +423,33 @@ async def collection(ctx):
     )
     await ctx.send(embed=embed, view=view)
 
+# Remplace par ton vrai ID utilisateur Discord
+OWNER_ID = 123456789012345678  # ← Remplace ceci par ton propre ID
+
+@bot.command(name="addcredits")
+async def add_credits(ctx, montant: int = 1000):
+    if ctx.author.id != OWNER_ID:
+        await ctx.send("❌ Tu n'es pas autorisé à utiliser cette commande.")
+        return
+
+    user_id = str(ctx.author.id)
+
+    # Chargement des crédits actuels
+    try:
+        with open("credits.json", "r") as f:
+            credits_data = json.load(f)
+    except FileNotFoundError:
+        credits_data = {}
+
+    # Ajout de crédits
+    credits_data[user_id] = credits_data.get(user_id, 0) + montant
+
+    # Sauvegarde des crédits
+    with open("credits.json", "w") as f:
+        json.dump(credits_data, f, indent=4)
+
+    await ctx.send(f"✅ Tu as reçu {montant} crédits. Total : {credits_data[user_id]} crédits.")
+
 print(f"Token: {TOKEN}")  # Ajoute cette ligne juste avant bot.run()
 
 
