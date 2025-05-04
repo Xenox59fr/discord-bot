@@ -29,13 +29,17 @@ def save_credits():
 @bot.command()
 async def credits(ctx):
     user_id = str(ctx.author.id)
+
     if user_id not in user_credits:
+        # Donne 100 crédits de départ uniquement aux nouveaux
         user_credits[user_id] = {
             "solde": 100,
             "total_credits": 100,
             "last_daily": "1970-01-01T00:00:00+00:00"
         }
         save_credits()
+
+    # Récupère le solde actuel
     solde = user_credits[user_id]["solde"]
     await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
 
