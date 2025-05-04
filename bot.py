@@ -7,28 +7,24 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-# Intents et setup
 intents = discord.Intents.default()
 intents.message_content = True
+
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Fichier pour stocker les crédits
 CREDITS_FILE = "credits.json"
 
-# Chargement des crédits depuis le fichier JSON
-def load_credits():
-   
+# Chargement des crédits depuis le fichier
 if os.path.exists(CREDITS_FILE):
     with open(CREDITS_FILE, "r") as f:
         user_credits = json.load(f)
 else:
     user_credits = {}
-# Sauvegarde des crédits dans le fichier JSON
+
+# Fonction bien indentée ici 👇
 def save_credits():
     with open(CREDITS_FILE, "w") as f:
         json.dump(user_credits, f)
-
-user_credits = {}  # ✅ nouveau nom
 
 @bot.command()
 async def credits(ctx):
@@ -38,6 +34,5 @@ async def credits(ctx):
         save_credits()
 
     await ctx.send(f"{ctx.author.mention}, tu as {user_credits[user_id]} crédits.")
-
 
 bot.run(TOKEN)  # lance le bot
