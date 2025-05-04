@@ -31,8 +31,8 @@ async def credits(ctx):
     user_id = str(ctx.author.id)
     if user_id not in user_credits:
         user_credits[user_id] = 100  # crédits de départ
-        save_credits()
+            solde = user_credits[user_id]["solde"]
+    await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
 
-    await ctx.send(f"{ctx.author.mention}, tu as {user_credits[user_id]} crédits.")
 
 bot.run(TOKEN)  # lance le bot
