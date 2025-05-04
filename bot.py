@@ -427,30 +427,19 @@ async def collection(ctx):
 OWNER_ID = 617293126494846996  # ← Remplace ceci par ton propre ID
 
 @bot.command()
-async def addcredits(ctx, montant: int):
-    user_id = str(ctx.author.id)
-
-    # Vérifie si c'est bien toi
-    if user_id != "617293126494846996":
-        await ctx.send("❌ Tu n'as pas la permission d'utiliser cette commande.")
-        return
-
-    # Charge les crédits
-    with open("credits.json", "r") as f:
-        credits_data = json.load(f)
-
-    # Initialise si pas encore d'entrée
+@commands.has_permissions(administrator=True)
+async def addcredits(ctx, member: discord.Member, montant: int):
+    user_id = str(member.id)
+    
     if user_id not in credits_data:
-        credits_data[user_id] = {"credits": 0}
+        credits_data[user_id] = {"solde": 0, "last_daily": "1970-01-01T00:00:00+00:00"}
 
-    # Ajout
-    credits_data[user_id]["credits"] += montant
+    credits_data[user_id]["solde"] += montant
 
-    # Sauvegarde
-    with open("credits.json", "w") as f:
-        json.dump(credits_data, f, indent=4)
+    save_credits(FICHIER_CREDITS, credits_data)  # ✅ Ici
 
-    await ctx.send(f"✅ Tu as reçu {montant} crédits.")
+    await ctx.send(f"✅ {montant} crédits ont été ajoutés à {member.mention}.")
+
 
 
 print(f"Token: {TOKEN}")  # Ajoute cette ligne juste avant bot.run()
