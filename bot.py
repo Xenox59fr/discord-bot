@@ -15,6 +15,17 @@ keep_alive()
 load_dotenv()  # charge les variables depuis .env (ou équivalent chez Glitch)
 TOKEN = os.getenv("TOKEN")  # récupère la variable TOKEN
 
+DATA_FILE = "user_data.json"
+
+def sauvegarder_user_data():
+    with open(DATA_FILE, "w") as f:
+        json.dump(user_data, f)
+
+def charger_user_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
 
 # Configuration du bot
 intents = discord.Intents.default()
