@@ -12,19 +12,21 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+
+
 CREDITS_FILE = "credits.json"
 
 # Chargement des crédits depuis le fichier
-if os.path.exists(CREDITS_FILE):
-    with open(CREDITS_FILE, "r") as f:
+if os.path.exists("credits.json"):
+    with open("credits.json", "r") as f:
         user_credits = json.load(f)
 else:
     user_credits = {}
 
 # Fonction bien indentée ici 👇
 def save_credits():
-    with open(CREDITS_FILE, "w") as f:
-        json.dump(user_credits, f)
+    with open("credits.json", "w") as f:
+        json.dump(user_credits, f, indent=4)
 
 @bot.command()
 async def credits(ctx):
