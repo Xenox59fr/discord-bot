@@ -27,19 +27,15 @@ def save_credits(data):
     with open(CREDITS_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-# Initialisation des crédits
-credits = load_credits()
+user_credits = {}  # ✅ nouveau nom
 
-# Commande !credits
 @bot.command()
 async def credits(ctx):
     user_id = str(ctx.author.id)
-    if user_id not in credits:
-        credits[user_id] = 100  # Crédit de départ
-        save_credits(credits)
-    
-    user_credits = credits[user_id]
-    await ctx.send(f"💰 {ctx.author.mention}, tu as **{user_credits}** crédits disponibles !")
+    if user_id not in user_credits:
+        user_credits[user_id] = 100  # exemple de valeur initiale
+    await ctx.send(f"Tu as {user_credits[user_id]} crédits.")
+
 
 
 
