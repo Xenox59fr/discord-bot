@@ -17,15 +17,16 @@ CREDITS_FILE = "credits.json"
 
 # Chargement des crédits depuis le fichier JSON
 def load_credits():
-    if os.path.exists(CREDITS_FILE):
-        with open(CREDITS_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
+   
+if os.path.exists(CREDITS_FILE):
+    with open(CREDITS_FILE, "r") as f:
+        user_credits = json.load(f)
+else:
+    user_credits = {}
 # Sauvegarde des crédits dans le fichier JSON
-def save_credits(data):
+def save_credits():
     with open(CREDITS_FILE, "w") as f:
-        json.dump(data, f, indent=4)
+        json.dump(user_credits, f)
 
 user_credits = {}  # ✅ nouveau nom
 
@@ -33,10 +34,10 @@ user_credits = {}  # ✅ nouveau nom
 async def credits(ctx):
     user_id = str(ctx.author.id)
     if user_id not in user_credits:
-        user_credits[user_id] = 100  # exemple de valeur initiale
-    await ctx.send(f"Tu as {user_credits[user_id]} crédits.")
+        user_credits[user_id] = 100  # crédits de départ
+        save_credits()
 
-
+    await ctx.send(f"{ctx.author.mention}, tu as {user_credits[user_id]} crédits.")
 
 
 bot.run(TOKEN)  # lance le bot
