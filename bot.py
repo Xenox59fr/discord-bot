@@ -3,6 +3,8 @@ from discord.ext import commands
 import json
 import os
 from dotenv import load_dotenv
+import datetime
+
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -22,6 +24,9 @@ if os.path.exists("credits.json"):
         user_credits = json.load(f)
 else:
     user_credits = {}
+    # Structure : {user_id: datetime}
+last_credit_time = {}
+
 
 # Fonction bien indentée ici 👇
 def save_credits():
@@ -44,6 +49,34 @@ async def credits(ctx):
     # Récupère le solde actuel
     solde = user_credits[user_id]["solde"]
     await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
+    @bot.event
+
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    user_id = str(message.author.id)
+    now = datetime.datetime.utcnow()
+
+    # Initialise les crédits si le user est nouveau
+    if user_id not in user_credits:
+        user_credits[user_id] = {
+            "solde": 100,
+            "total_credits": 100,
+            "last_daily": "1970-01-01T00:00:00+00:00"
+        }
+
+    # Vérifie si 60s sont passées depuis le dernier crédit donné
+    last_time = last_credit_time.get(user_id)
+    if last_time is None or (now - last_time).total_seconds() >= 60:
+        user_credits[user_id]["solde"] += 1
+        user_credits[user_id]["total_credits"] += 1
+        last_credit_time[user_id] = now
+        save_credits()
+
+    # Très important : permet à d'autres commandes (!credits, etc.) de fonctionner
+    await bot.process_commands(message)
+
 
 
 
