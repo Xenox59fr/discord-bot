@@ -75,10 +75,8 @@ async def on_message(message):
         last_credit_time[user_id] = now
         save_credits()
 
-    # Important pour que les commandes (!credits, etc.) continuent de fonctionner
+    # Nécessaire pour que les commandes marchent (ex: !credits)
     await bot.process_commands(message)
-
-
 
 
 
