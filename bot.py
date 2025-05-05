@@ -46,6 +46,36 @@ async def credits(ctx):
     solde = user_credits[user_id]["solde"]
     await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
 
+@bot.command()
+async def daily(ctx):
+    user_id = str(ctx.author.id)
+    now = datetime.datetime.utcnow()
+
+    # Initialise l'utilisateur si inconnu
+    if user_id not in user_credits:
+        user_credits[user_id] = {
+            "solde": 100,
+            "total_credits": 100,
+            "last_daily": "1970-01-01T00:00:00+00:00"
+        }
+
+    last_claim = datetime.datetime.fromisoformat(user_credits[user_id]["last_daily"])
+    elapsed = (now - last_claim).total_seconds()
+
+    if elapsed >= 86400:  # 24 heures
+        user_credits[user_id]["solde"] += 50
+        user_credits[user_id]["total_credits"] += 50
+        user_credits[user_id]["last_daily"] = now.isoformat()
+        save_credits()
+        await ctx.send(f"{ctx.author.mention}, tu as reçu tes 50 crédits quotidiens ! 💰")
+    else:
+        remaining = int(86400 - elapsed)
+        hours = remaining // 3600
+        minutes = (remaining % 3600) // 60
+        seconds = remaining % 60
+        await ctx.send(f"{ctx.author.mention}, tu as déjà réclamé tes crédits quotidiens. Reviens dans {hours}h {minutes}m {seconds}s ⏳.")
+
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
