@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import datetime
 from flask import Flask
 import threading
+
 app = Flask('')
 
 @app.route('/')
@@ -57,12 +58,24 @@ def init_user(user_id):
         }
         save_credits()
 
+# Ajouter des crédits
+def add_credits(user_id, amount):
+    init_user(user_id)
+    user_credits[user_id]["solde"] += amount
+    user_credits[user_id]["total_credits"] += amount
+    save_credits()
+
+# Retirer des crédits
+def remove_credits(user_id, amount):
+    init_user(user_id)
+    user_credits[user_id]["solde"] = max(0, user_credits[user_id]["solde"] - amount)
+    save_credits()
+
 @bot.command()
 async def credits(ctx):
     user_id = str(ctx.author.id)
     init_user(user_id)
 
-    # Récupère le solde actuel
     solde = user_credits[user_id]["solde"]
     await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
 
@@ -76,9 +89,8 @@ async def daily(ctx):
     last_claim = datetime.datetime.fromisoformat(user_credits[user_id]["last_daily"])
     elapsed = (now - last_claim).total_seconds()
 
-    if elapsed >= 86400:  # 24 heures
-        user_credits[user_id]["solde"] += 50
-        user_credits[user_id]["total_credits"] += 50
+    if elapsed >= 86400:
+        add_credits(user_id, 50)
         user_credits[user_id]["last_daily"] = now.isoformat()
         save_credits()
         await ctx.send(f"{ctx.author.mention}, tu as reçu tes 50 crédits quotidiens ! 💰")
@@ -97,21 +109,15 @@ async def on_message(message):
     user_id = str(message.author.id)
     now = datetime.datetime.utcnow()
 
-    # Initialise les crédits si le user est nouveau
     init_user(user_id)
 
-    # Vérifie si 60 secondes sont passées depuis le dernier crédit donné
     last_time = last_credit_time.get(user_id)
     if last_time is None or (now - last_time).total_seconds() >= 60:
-        user_credits[user_id]["solde"] += 1
-        user_credits[user_id]["total_credits"] += 1
+        add_credits(user_id, 1)
         last_credit_time[user_id] = now
-        save_credits()
 
-    # Pour que les commandes (ex: !credits) soient traitées
     await bot.process_commands(message)
 
-bot.run(TOKEN)
 
 
 
