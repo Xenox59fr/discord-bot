@@ -51,6 +51,7 @@ async def credits(ctx):
     await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
     @bot.event
 
+@bot.event
 async def on_message(message):
     if message.author.bot:
         return
@@ -74,8 +75,9 @@ async def on_message(message):
         last_credit_time[user_id] = now
         save_credits()
 
-    # Très important : permet à d'autres commandes (!credits, etc.) de fonctionner
+    # Important pour que les commandes (!credits, etc.) continuent de fonctionner
     await bot.process_commands(message)
+
 
 
 
