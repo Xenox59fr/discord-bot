@@ -49,7 +49,7 @@ async def credits(ctx):
 @bot.command()
 async def daily(ctx):
     user_id = str(ctx.author.id)
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc)
 
     # Initialise l'utilisateur si inconnu
     if user_id not in user_credits:
