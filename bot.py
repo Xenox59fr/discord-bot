@@ -29,18 +29,20 @@ def save_credits():
     with open(CREDITS_FILE, "w") as f:
         json.dump(user_credits, f, indent=4)
 
-@bot.command()
-async def credits(ctx):
-    user_id = str(ctx.author.id)
-
+# Initialisation de l'utilisateur
+def init_user(user_id):
     if user_id not in user_credits:
-        # Donne 100 crédits de départ uniquement aux nouveaux
         user_credits[user_id] = {
             "solde": 100,
             "total_credits": 100,
             "last_daily": "1970-01-01T00:00:00+00:00"
         }
         save_credits()
+
+@bot.command()
+async def credits(ctx):
+    user_id = str(ctx.author.id)
+    init_user(user_id)
 
     # Récupère le solde actuel
     solde = user_credits[user_id]["solde"]
@@ -51,13 +53,7 @@ async def daily(ctx):
     user_id = str(ctx.author.id)
     now = datetime.datetime.now(datetime.timezone.utc)
 
-    # Initialise l'utilisateur si inconnu
-    if user_id not in user_credits:
-        user_credits[user_id] = {
-            "solde": 100,
-            "total_credits": 100,
-            "last_daily": "1970-01-01T00:00:00+00:00"
-        }
+    init_user(user_id)
 
     last_claim = datetime.datetime.fromisoformat(user_credits[user_id]["last_daily"])
     elapsed = (now - last_claim).total_seconds()
@@ -75,7 +71,6 @@ async def daily(ctx):
         seconds = remaining % 60
         await ctx.send(f"{ctx.author.mention}, tu as déjà réclamé tes crédits quotidiens. Reviens dans {hours}h {minutes}m {seconds}s ⏳.")
 
-
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -85,12 +80,7 @@ async def on_message(message):
     now = datetime.datetime.utcnow()
 
     # Initialise les crédits si le user est nouveau
-    if user_id not in user_credits:
-        user_credits[user_id] = {
-            "solde": 100,
-            "total_credits": 100,
-            "last_daily": "1970-01-01T00:00:00+00:00"
-        }
+    init_user(user_id)
 
     # Vérifie si 60 secondes sont passées depuis le dernier crédit donné
     last_time = last_credit_time.get(user_id)
@@ -104,4 +94,5 @@ async def on_message(message):
     await bot.process_commands(message)
 
 bot.run(TOKEN)
+
 
