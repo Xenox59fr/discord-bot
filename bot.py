@@ -16,18 +16,24 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 CREDITS_FILE = "credits.json"
 
 # Chargement des crédits depuis le fichier
-if os.path.exists(CREDITS_FILE):
-    with open(CREDITS_FILE, "r") as f:
-        user_credits = json.load(f)
-else:
-    user_credits = {}
+def load_credits():
+    if os.path.exists(CREDITS_FILE):
+        with open(CREDITS_FILE, "r") as f:
+            data = json.load(f)
+            print("Crédits chargés depuis le fichier.")
+            return data
+    else:
+        print("Aucun fichier de crédits trouvé, création d'un fichier vide.")
+        return {}
 
+user_credits = load_credits()
 last_credit_time = {}
 
 # Sauvegarde les crédits dans le fichier
 def save_credits():
     with open(CREDITS_FILE, "w") as f:
         json.dump(user_credits, f, indent=4)
+    print("Crédits sauvegardés dans le fichier.")
 
 # Initialisation de l'utilisateur
 def init_user(user_id):
@@ -94,5 +100,6 @@ async def on_message(message):
     await bot.process_commands(message)
 
 bot.run(TOKEN)
+
 
 
