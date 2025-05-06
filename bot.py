@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
-import sqlite3
 import os
 import datetime
 from dotenv import load_dotenv
 from flask import Flask
 import threading
+from supabase import create_client, Client
 
 # Flask pour le "ping" de Render
 app = Flask('')
@@ -19,9 +19,14 @@ def run():
 
 threading.Thread(target=run).start()
 
-# Discord token
+# Chargement du token et des variables d'environnement
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+# Connexion à Supabase
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Intents
 intents = discord.Intents.default()
@@ -29,60 +34,41 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Connexion base de données SQLite
-conn = sqlite3.connect("credits.db")
-cursor = conn.cursor()
-
-# Création de la table si elle n'existe pas
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    user_id TEXT PRIMARY KEY,
-    solde INTEGER DEFAULT 100,
-    total_credits INTEGER DEFAULT 100,
-    last_daily TEXT DEFAULT '1970-01-01T00:00:00+00:00'
-)
-""")
-conn.commit()
-
-last_credit_time = {}
-
 # Initialiser un utilisateur
 def init_user(user_id):
-    cursor.execute("SELECT 1 FROM users WHERE user_id = ?", (user_id,))
-    if cursor.fetchone() is None:
-        cursor.execute(
-            "INSERT INTO users (user_id) VALUES (?)",
-            (user_id,)
-        )
-        conn.commit()
+    # Vérifier si l'utilisateur existe déjà dans la base de données Supabase
+    user = supabase.table('users').select('*').eq('user_id', user_id).execute()
+    if not user.data:
+        # Si l'utilisateur n'existe pas, on l'ajoute avec les crédits de départ
+        supabase.table('users').insert([{
+            'user_id': user_id,
+            'solde': 100,
+            'total_credits': 100,
+            'last_daily': '1970-01-01T00:00:00+00:00'
+        }]).execute()
 
 # Ajouter des crédits
 def add_credits(user_id, amount):
     init_user(user_id)
-    cursor.execute("""
-        UPDATE users
-        SET solde = solde + ?, total_credits = total_credits + ?
-        WHERE user_id = ?
-    """, (amount, amount, user_id))
-    conn.commit()
+    supabase.table('users').update({
+        'solde': supabase.table('users').select('solde').eq('user_id', user_id).execute().data[0]['solde'] + amount,
+        'total_credits': supabase.table('users').select('total_credits').eq('user_id', user_id).execute().data[0]['total_credits'] + amount
+    }).eq('user_id', user_id).execute()
 
 # Retirer des crédits
 def remove_credits(user_id, amount):
     init_user(user_id)
-    cursor.execute("""
-        UPDATE users
-        SET solde = MAX(solde - ?, 0)
-        WHERE user_id = ?
-    """, (amount, user_id))
-    conn.commit()
+    supabase.table('users').update({
+        'solde': max(0, supabase.table('users').select('solde').eq('user_id', user_id).execute().data[0]['solde'] - amount)
+    }).eq('user_id', user_id).execute()
 
 # Commande !credits
 @bot.command()
 async def credits(ctx):
     user_id = str(ctx.author.id)
     init_user(user_id)
-    cursor.execute("SELECT solde FROM users WHERE user_id = ?", (user_id,))
-    solde = cursor.fetchone()[0]
+    user = supabase.table('users').select('solde').eq('user_id', user_id).execute()
+    solde = user.data[0]['solde']
     await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
 
 # Commande !daily
@@ -92,14 +78,13 @@ async def daily(ctx):
     now = datetime.datetime.now(datetime.timezone.utc)
     init_user(user_id)
 
-    cursor.execute("SELECT last_daily FROM users WHERE user_id = ?", (user_id,))
-    last_claim = datetime.datetime.fromisoformat(cursor.fetchone()[0])
+    user = supabase.table('users').select('last_daily').eq('user_id', user_id).execute()
+    last_claim = datetime.datetime.fromisoformat(user.data[0]['last_daily'])
     elapsed = (now - last_claim).total_seconds()
 
     if elapsed >= 86400:
         add_credits(user_id, 50)
-        cursor.execute("UPDATE users SET last_daily = ? WHERE user_id = ?", (now.isoformat(), user_id))
-        conn.commit()
+        supabase.table('users').update({'last_daily': now.isoformat()}).eq('user_id', user_id).execute()
         await ctx.send(f"{ctx.author.mention}, tu as reçu tes 50 crédits quotidiens ! 💰")
     else:
         remaining = int(86400 - elapsed)
@@ -126,6 +111,7 @@ async def on_message(message):
     await bot.process_commands(message)
 
 bot.run(TOKEN)
+
 
 
 
