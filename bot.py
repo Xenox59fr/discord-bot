@@ -7,6 +7,9 @@ from flask import Flask
 import threading
 from supabase import create_client, Client
 
+last_credit_time = {}
+
+
 # Flask pour le "ping" de Render
 app = Flask('')
 
