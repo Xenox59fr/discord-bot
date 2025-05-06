@@ -30,7 +30,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Connexion base de données SQLite
-conn = sqlite3.connect("credits.db")
+conn = sqlite3.connect("/data/credits.db")
 cursor = conn.cursor()
 
 # Création de la table si elle n'existe pas
