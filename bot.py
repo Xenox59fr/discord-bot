@@ -195,22 +195,23 @@ async def buy(ctx, nombre: int = 1):
         message = RARITY_SETTINGS[rarete]["message"]
 
         embed = discord.Embed(
-        title=f"🃏 Tu as tiré : {carte['nom']}",
-        description=message,
-        color=couleur
-)
+            title=f"🃏 Tu as tiré : {carte['nom']}",
+            description=message,
+            color=couleur
+        )
 
         # Ajouter l'image de la carte
         embed.set_image(url=carte["image"])
 
-       # Ajouter le nom d'utilisateur et sa photo de profil dans l'embed
-       embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
+        # Ajouter le nom d'utilisateur et sa photo de profil dans l'embed
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
 
-       # Ajouter la rareté dans le footer
-       embed.set_footer(text=f"Rareté : {rarete.upper()}")
+        # Ajouter la rareté dans le footer
+        embed.set_footer(text=f"Rareté : {rarete.upper()}")
 
-      # Envoyer l'embed
-      await ctx.send(embed=embed)
+        # Envoyer l'embed
+        await ctx.send(embed=embed)
+
 
 bot.run(TOKEN)
 
