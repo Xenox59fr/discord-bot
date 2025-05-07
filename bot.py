@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from flask import Flask
 import threading
 from supabase import create_client, Client
+import random
+import json
 
 last_credit_time = {}
 
@@ -112,6 +114,90 @@ async def on_message(message):
         last_credit_time[user_id] = now
 
     await bot.process_commands(message)
+
+# Raretés, couleurs, messages et probabilités
+RARITY_SETTINGS = {
+    "commun": {
+        "color": 0xFFFFFF,
+        "message": "Une carte banale... mais chaque guerrier commence quelque part ⚔️",
+        "chance": 50
+    },
+    "rare": {
+        "color": 0x3498db,
+        "message": "Une carte rare ! Le destin commence à tourner 🔷",
+        "chance": 25
+    },
+    "epique": {
+        "color": 0x9b59b6,
+        "message": "Une carte épique ! Les ombres te reconnaissent 👁️",
+        "chance": 15
+    },
+    "legendaire": {
+        "color": 0xf1c40f,
+        "message": "✨ Légendaire ! Tu viens d'éveiller une légende ancienne... ✨",
+        "chance": 7
+    },
+    "unique": {
+        "color": 0xff5c8d,
+        "message": "💎 UNIQUE ! Tu as invoqué l'invocable... C'est du jamais vu ! 💎",
+        "chance": 2
+    },
+    "collab": {
+        "color": 0x00ffc8,
+        "message": "🌟 COLLAB ! Une carte d'une dimension parallèle ! 🌟",
+        "chance": 1
+    }
+}
+
+# Charger les cartes depuis GitHub (tu peux le faire aussi localement avec open("cartes.json"))
+with open("cartes.json", "r", encoding="utf-8") as f:
+    all_cards = json.load(f)
+
+# Filtrer les cartes par rareté
+cards_by_rarity = {rarity: [c for c in all_cards if c["rarete"] == rarity] for rarity in RARITY_SETTINGS}
+
+# Fonction pour choisir une rareté selon les chances
+def tirer_rarete():
+    rand = random.uniform(0, 100)
+    cumulative = 0
+    for rarity, data in RARITY_SETTINGS.items():
+        cumulative += data["chance"]
+        if rand <= cumulative:
+            return rarity
+    return "commun"
+
+# Commande !buy [nb]
+@bot.command()
+async def buy(ctx, nombre: int = 1):
+    user_id = str(ctx.author.id)
+
+    if nombre not in [1, 5, 10]:
+        await ctx.send(f"{ctx.author.mention}, tu peux acheter 1, 5 ou 10 packs seulement.")
+        return
+
+    cursor.execute("SELECT solde FROM users WHERE user_id = %s", (user_id,))
+    solde = cursor.fetchone()
+    if solde is None or solde[0] < nombre:
+        await ctx.send(f"{ctx.author.mention}, tu n'as pas assez de crédits pour acheter {nombre} pack(s) ❌.")
+        return
+
+    remove_credits(user_id, nombre)
+
+    for _ in range(nombre):
+        rarete = tirer_rarete()
+        carte = random.choice(cards_by_rarity[rarete])
+        couleur = RARITY_SETTINGS[rarete]["color"]
+        message = RARITY_SETTINGS[rarete]["message"]
+
+        embed = discord.Embed(
+            title=f"🃏 Tu as tiré : {carte['nom']}",
+            description=message,
+            color=couleur
+        )
+        embed.set_image(url=carte["image"])
+        embed.set_footer(text=f"Rareté : {rarete.upper()}")
+        await ctx.send(embed=embed)
+
 
 bot.run(TOKEN)
 
