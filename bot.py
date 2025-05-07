@@ -175,7 +175,7 @@ async def buy(ctx, nombre: int = 1):
         await ctx.send(f"{ctx.author.mention}, tu peux acheter 1, 5 ou 10 packs seulement.")
         return
 
-   result = supabase.table("users").select("solde").eq("user_id", user_id).execute()
+    result = supabase.table("users").select("solde").eq("user_id", user_id).execute()
 if result.data:
     solde = result.data[0]["solde"]
 else:
