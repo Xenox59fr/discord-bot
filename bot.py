@@ -214,19 +214,29 @@ async def buy(ctx, nombre: int = 1):
 
 @bot.command()
 async def givecredits(ctx):
-    # Remplace par TON ID Discord ici
-    owner_id = 617293126494846996
+    owner_id = 617293126494846996  # Ton ID Discord ici
 
     if ctx.author.id != owner_id:
         await ctx.send("❌ Cette commande est réservée au développeur.")
         return
 
     user_id = str(ctx.author.id)
-    user_data = await get_user_data(user_id)
-    new_credits = user_data["credits"] + 1000  # 💰 montant à donner
+    init_user(user_id)
 
-    await set_user_credits(user_id, new_credits)
-    await ctx.send(f"✅ Tu as reçu 1000 crédits pour les tests. Nouveau solde : {new_credits} crédits.")
+    # Récupérer le solde actuel
+    user = supabase.table('users').select('solde', 'total_credits').eq('user_id', user_id).execute()
+    solde_actuel = user.data[0]['solde']
+    total_actuel = user.data[0]['total_credits']
+
+    # Ajouter 1000 crédits
+    montant = 1000
+    supabase.table('users').update({
+        'solde': solde_actuel + montant,
+        'total_credits': total_actuel + montant
+    }).eq('user_id', user_id).execute()
+
+    await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
+
 
 
 
