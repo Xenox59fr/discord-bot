@@ -166,7 +166,6 @@ def tirer_rarete():
             return rarity
     return "commun"
 
-# Commande !buy [nb]
 @bot.command()
 async def buy(ctx, nombre: int = 1):
     user_id = str(ctx.author.id)
@@ -175,13 +174,15 @@ async def buy(ctx, nombre: int = 1):
         await ctx.send(f"{ctx.author.mention}, tu peux acheter 1, 5 ou 10 packs seulement.")
         return
 
+    init_user(user_id)
     result = supabase.table("users").select("solde").eq("user_id", user_id).execute()
-if result.data:
-    solde = result.data[0]["solde"]
-else:
-    solde = 0  # ou autre valeur par défaut
 
-    if solde is None or solde[0] < nombre:
+    if result.data:
+        solde = result.data[0]["solde"]
+    else:
+        solde = 0
+
+    if solde < nombre:
         await ctx.send(f"{ctx.author.mention}, tu n'as pas assez de crédits pour acheter {nombre} pack(s) ❌.")
         return
 
@@ -201,7 +202,6 @@ else:
         embed.set_image(url=carte["image"])
         embed.set_footer(text=f"Rareté : {rarete.upper()}")
         await ctx.send(embed=embed)
-
 
 bot.run(TOKEN)
 
