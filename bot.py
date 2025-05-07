@@ -212,6 +212,23 @@ async def buy(ctx, nombre: int = 1):
         # Envoyer l'embed
         await ctx.send(embed=embed)
 
+@bot.command()
+async def givecredits(ctx):
+    # Remplace par TON ID Discord ici
+    owner_id = 617293126494846996
+
+    if ctx.author.id != owner_id:
+        await ctx.send("❌ Cette commande est réservée au développeur.")
+        return
+
+    user_id = str(ctx.author.id)
+    user_data = await get_user_data(user_id)
+    new_credits = user_data["credits"] + 1000  # 💰 montant à donner
+
+    await set_user_credits(user_id, new_credits)
+    await ctx.send(f"✅ Tu as reçu 1000 crédits pour les tests. Nouveau solde : {new_credits} crédits.")
+
+
 
 bot.run(TOKEN)
 
