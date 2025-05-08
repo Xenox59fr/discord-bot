@@ -244,6 +244,47 @@ async def givecredits(ctx):
 
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 
+@bot.command()
+async def collection(ctx):
+    user_id = str(ctx.author.id)
+
+    # Récupérer toutes les cartes de l'utilisateur depuis Supabase
+    cartes_utilisateur = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
+
+    # Si l'utilisateur n'a pas de cartes, envoyer un message
+    if not cartes_utilisateur.data:
+        await ctx.send(f"{ctx.author.mention}, tu n'as pas encore de cartes.")
+        return
+
+    # Groupement des cartes par rareté
+    cartes_par_rareté = {}
+    for carte in cartes_utilisateur.data:
+        rarete = carte['rarity']
+        if rarete not in cartes_par_rareté:
+            cartes_par_rareté[rarete] = []
+        cartes_par_rareté[rarete].append(carte)
+
+    # Créer un embed pour chaque rareté
+    embed = discord.Embed(
+        title=f"Collection de {ctx.author.display_name}",
+        description="Voici les cartes que tu as obtenues ! 🎴",
+        color=0x2ecc71  # Vert
+    )
+
+    # Ajouter les cartes par rareté
+    for rarete, cartes in cartes_par_rareté.items():
+        # Récupérer le nom des cartes et les afficher
+        noms_cartes = [f"**{carte['card_id']}**" for carte in cartes]
+        embed.add_field(
+            name=f"{rarete.capitalize()} ({len(cartes)} cartes)",
+            value="\n".join(noms_cartes) if noms_cartes else "Aucune carte",
+            inline=False
+        )
+
+    # Envoyer l'embed avec les cartes obtenues
+    await ctx.send(embed=embed)
+
+
 
 
 
