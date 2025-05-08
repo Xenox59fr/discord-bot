@@ -8,6 +8,7 @@ import threading
 from supabase import create_client, Client
 import random
 import json
+from discord.ui import Button, View
 
 last_credit_time = {}
 
@@ -265,33 +266,84 @@ async def collection(ctx):
         await ctx.send(f"{ctx.author.mention}, tu n'as pas encore de cartes.")
         return
 
-    # Groupement des cartes par rareté
-    cartes_par_rareté = {}
-    for carte in cartes_utilisateur.data:
-        rarete = carte['rarity']
-        if rarete not in cartes_par_rareté:
-            cartes_par_rareté[rarete] = []
-        cartes_par_rareté[rarete].append(carte)
+    # Créer la vue (avec les boutons)
+    view = View()
 
-    # Créer un embed pour chaque rareté
+    # Ajouter un bouton Saison 0
+    saison0_button = Button(label="SAISON 0", style=discord.ButtonStyle.green, custom_id="season0")
+    view.add_item(saison0_button)
+
+    # Ajouter des boutons pour chaque rareté
+    for rarity in RARITY_SETTINGS.keys():
+        button = Button(label=rarity.capitalize(), style=discord.ButtonStyle.primary, custom_id=f"rarity_{rarity}")
+        view.add_item(button)
+
+    # Envoi de l'embed avec les boutons
     embed = discord.Embed(
         title=f"Collection de {ctx.author.display_name}",
         description="Voici les cartes que tu as obtenues ! 🎴",
         color=0x2ecc71  # Vert
     )
+    await ctx.send(embed=embed, view=view)
 
-    # Ajouter les cartes par rareté
-    for rarete, cartes in cartes_par_rareté.items():
-        # Récupérer le nom des cartes et les afficher
-        noms_cartes = [f"**{carte['card_id']}**" for carte in cartes]
-        embed.add_field(
-            name=f"{rarete.capitalize()} ({len(cartes)} cartes)",
-            value="\n".join(noms_cartes) if noms_cartes else "Aucune carte",
-            inline=False
-        )
+# Gestion des interactions avec les boutons
+@bot.event
+async def on_socket_response(payload):
+    if payload["t"] == "INTERACTION_CREATE":
+        custom_id = payload["d"]["data"]["custom_id"]
+        user_id = str(payload["d"]["member"]["user"]["id"])
 
-    # Envoyer l'embed avec les cartes obtenues
-    await ctx.send(embed=embed)
+        # Si l'utilisateur appuie sur un bouton de rareté
+        if custom_id.startswith("rarity_"):
+            rarity = custom_id.split("_")[1]
+
+            # Filtrer les cartes de cet utilisateur par rareté
+            cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("rarity", rarity).execute()
+
+            if not cartes_utilisateur.data:
+                await payload["d"]["channel_id"].send(f"{user_id}, tu n'as pas encore de cartes de rareté {rarity}.")
+                return
+
+            # Créer l'embed pour afficher les cartes filtrées
+            embed = discord.Embed(
+                title=f"Cartes de rareté {rarity.capitalize()}",
+                description="Voici tes cartes filtrées ! 🎴",
+                color=RARITY_SETTINGS[rarity]["color"]
+            )
+
+            noms_cartes = [f"**{carte['card_id']}**" for carte in cartes_utilisateur.data]
+            embed.add_field(
+                name=f"{rarity.capitalize()} ({len(cartes_utilisateur.data)} cartes)",
+                value="\n".join(noms_cartes) if noms_cartes else "Aucune carte",
+                inline=False
+            )
+
+            await payload["d"]["channel_id"].send(embed=embed)
+
+        # Si l'utilisateur appuie sur le bouton SAISON 0
+        elif custom_id == "season0":
+            # Afficher les cartes de la SAISON 0 ici
+            cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", "0").execute()
+
+            if not cartes_utilisateur.data:
+                await payload["d"]["channel_id"].send(f"{user_id}, tu n'as pas encore de cartes de la SAISON 0.")
+                return
+
+            # Créer l'embed pour afficher les cartes Saison 0
+            embed = discord.Embed(
+                title="Cartes SAISON 0",
+                description="Voici tes cartes de la SAISON 0 ! 🎴",
+                color=0x9b59b6  # Couleur Saison 0
+            )
+
+            noms_cartes = [f"**{carte['card_id']}**" for carte in cartes_utilisateur.data]
+            embed.add_field(
+                name=f"SAISON 0 ({len(cartes_utilisateur.data)} cartes)",
+                value="\n".join(noms_cartes) if noms_cartes else "Aucune carte",
+                inline=False
+            )
+
+            await payload["d"]["channel_id"].send(embed=embed)
 
 
 
