@@ -272,55 +272,52 @@ async def on_socket_response(payload):
         custom_id = payload["d"]["data"]["custom_id"]
         user_id = str(payload["d"]["member"]["user"]["id"])
 
-        # Si l'utilisateur clique sur SAISON 0
+        # Si l'utilisateur appuie sur le bouton SAISON 0
         if custom_id == "season0":
-            # Créer des boutons pour chaque rareté
-            rarity_buttons = [
-                Button(label="Commun", custom_id="rarity_commun"),
-                Button(label="Rare", custom_id="rarity_rare"),
-                Button(label="Épique", custom_id="rarity_epique"),
-                Button(label="Légendaire", custom_id="rarity_legendaire")
-            ]
-            rarity_view = View()
-            for button in rarity_buttons:
-                rarity_view.add_item(button)
+            try:
+                # Filtrer les cartes de la SAISON 0
+                cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", "0").execute()
 
-            # Envoie un message avec les boutons de rareté
-            await bot.get_channel(int(payload["d"]["channel_id"])).send(
-                "Choisis une rareté pour voir tes cartes 🎴", view=rarity_view
-            )
+                if not cartes_utilisateur.data:
+                    await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
+                        "type": 4,
+                        "data": {
+                            "content": f"{user_id}, tu n'as pas encore de cartes de la SAISON 0."
+                        }
+                    })
+                    return
 
-        # Si l'utilisateur clique sur un bouton de rareté
-        elif custom_id.startswith("rarity_"):
-            rarity = custom_id.split("_")[1]
+                # Créer l'embed pour afficher les cartes de la SAISON 0
+                embed = discord.Embed(
+                    title="Cartes SAISON 0",
+                    description="Voici tes cartes de la SAISON 0 ! 🎴",
+                    color=0x9b59b6  # Couleur Saison 0
+                )
 
-            # Filtrer les cartes de cet utilisateur par rareté et saison 0
-            cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("rarity", rarity).eq("season", "0").execute()
-
-            if not cartes_utilisateur.data:
-                await bot.get_channel(int(payload["d"]["channel_id"])).send(f"{user_id}, tu n'as pas encore de cartes de rareté {rarity} dans la SAISON 0.")
-                return
-
-            # Créer l'embed pour afficher les cartes filtrées
-            embed = discord.Embed(
-                title=f"Cartes de rareté {rarity.capitalize()}",
-                description="Voici tes cartes filtrées ! 🎴",
-                color=RARITY_SETTINGS[rarity]["color"]
-            )
-
-            # Ajouter chaque carte avec son image
-            for carte in cartes_utilisateur.data:
-                image_url = carte.get("image_url", "")  # Assure-toi que l'image est stockée dans la base de données
+                noms_cartes = [f"**{carte['card_id']}**" for carte in cartes_utilisateur.data]
                 embed.add_field(
-                    name=carte["card_id"],
-                    value=f"**{carte['card_id']}**\nRareté: {rarity.capitalize()}",
+                    name=f"SAISON 0 ({len(cartes_utilisateur.data)} cartes)",
+                    value="\n".join(noms_cartes) if noms_cartes else "Aucune carte",
                     inline=False
                 )
-                if image_url:
-                    embed.set_thumbnail(url=image_url)
 
-            # Envoie de l'embed avec les cartes
-            await bot.get_channel(int(payload["d"]["channel_id"])).send(embed=embed)
+                # Répondre à l'interaction avec l'embed
+                await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
+                    "type": 4,
+                    "data": {
+                        "embeds": [embed.to_dict()]
+                    }
+                })
+
+            except Exception as e:
+                print(f"Erreur : {e}")
+                await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
+                    "type": 4,
+                    "data": {
+                        "content": "Une erreur est survenue lors de la récupération de tes cartes."
+                    }
+                })
+
 
 
 
