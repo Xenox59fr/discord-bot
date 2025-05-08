@@ -211,6 +211,15 @@ async def buy(ctx, nombre: int = 1):
 
         # Envoyer l'embed
         await ctx.send(embed=embed)
+         # Vérification avant l'insertion dans la base
+        print(f"Insertion carte : user_id={user_id}, card_id={carte['id']}, rarity={rarete}")
+
+        # Insérer la carte dans la base de données
+        supabase.table("new_user_cards").insert({
+            "user_id": user_id,
+            "card_id": carte["id"],      # Assure-toi que chaque carte dans cartes.json a un champ "id"
+            "rarity": rarete
+        }).execute()
         # Enregistrer la carte obtenue dans Supabase
     supabase.table("cartes").insert({
         "user_id": user_id,
