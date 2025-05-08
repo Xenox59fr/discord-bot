@@ -211,6 +211,13 @@ async def buy(ctx, nombre: int = 1):
 
         # Envoyer l'embed
         await ctx.send(embed=embed)
+        # Enregistrer la carte obtenue dans Supabase
+    supabase.table("cartes").insert({
+        "user_id": user_id,
+        "card_id": carte["id"],      # Assure-toi que chaque carte dans cartes.json a un champ "id"
+        "rarity": rarete
+    }).execute()
+
 
 @bot.command()
 async def givecredits(ctx):
