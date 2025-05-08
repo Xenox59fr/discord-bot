@@ -249,7 +249,7 @@ async def collection(ctx):
     user_id = str(ctx.author.id)
 
     # Récupérer toutes les cartes de l'utilisateur depuis Supabase
-    cartes_utilisateur = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
+    cartes_utilisateur = supabase.table("user_cards").select("*").eq("user_id", user_id).execute()
 
     # Si l'utilisateur n'a pas de cartes, envoyer un message
     if not cartes_utilisateur.data:
