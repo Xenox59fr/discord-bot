@@ -287,7 +287,7 @@ async def collection(ctx):
     user_id = str(ctx.author.id)
 
     # Récupère toutes les cartes de l'utilisateur pour la saison 0
-    response = supabase.table("cartes").select("*").eq("user_id", user_id).eq("season", 0).execute()
+    response = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", 0).execute()
     cartes = response.data
 
     if not cartes:
