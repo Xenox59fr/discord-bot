@@ -9,6 +9,8 @@ from supabase import create_client, Client
 import random
 import json
 from discord.ui import Button, View
+import math
+
 
 last_credit_time = {}
 
