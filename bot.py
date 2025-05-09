@@ -171,13 +171,16 @@ def tirer_rarete():
 async def buy(ctx, nombre: int = 1):
     user_id = str(ctx.author.id)
     # Log de la requête avant l'exécution
-    print(f"Achat de {quantity} pack(s) pour {ctx.author.id}")
+    print(f"Achat de {nombre} pack(s) pour {ctx.author.id}")  # Correction de la variable `nombre`
+    
+    try:
+        # Insérer les packs achetés dans la base de données
         response = supabase.table("new_user_cards").insert({
             "user_id": ctx.author.id,
-            "quantity": quantity,
+            "quantity": nombre,
             # Ajoute d'autres champs nécessaires ici
         }).execute()
-    print(response)  # Log de la réponse de Supabase
+        print(response)  # Log de la réponse de Supabase
     except Exception as e:
         print(f"Erreur lors de l'achat : {e}")
 
@@ -222,7 +225,8 @@ async def buy(ctx, nombre: int = 1):
 
         # Envoyer l'embed
         await ctx.send(embed=embed)
-         # Vérification avant l'insertion dans la base
+        
+        # Vérification avant l'insertion dans la base
         print(f"Insertion carte : user_id={user_id}, card_id={carte['id']}, rarity={rarete}")
 
         # Insérer la carte dans la base de données
@@ -237,7 +241,6 @@ async def buy(ctx, nombre: int = 1):
         "card_id": carte["id"],      # Assure-toi que chaque carte dans cartes.json a un champ "id"
         "rarity": rarete
     }).execute()
-
 
 @bot.command()
 async def givecredits(ctx):
