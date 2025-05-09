@@ -243,12 +243,18 @@ async def buy(ctx, nombre: int = 1):
             "card_id": carte["id"],      # Assure-toi que chaque carte dans cartes.json a un champ "id"
             "rarity": rarete
         }).execute()
-        # Enregistrer la carte obtenue dans Supabase
-    supabase.table("cartes").insert({
-        "user_id": user_id,
-        "card_id": carte["id"],      # Assure-toi que chaque carte dans cartes.json a un champ "id"
-        "rarity": rarete
-    }).execute()
+        try:
+            data = {
+                "user_id": user_id,
+                "card_id": carte["id"],  # Assure-toi que "id" existe dans ta carte
+                "rarity": rarete,
+                "season": 0
+            }
+            print("Données envoyées à Supabase:", data)
+            supabase.table("new_user_cards").insert(data).execute()
+        except Exception as e:
+            print("Erreur d'insertion Supabase:", e)
+
 
 @bot.command()
 async def givecredits(ctx):
