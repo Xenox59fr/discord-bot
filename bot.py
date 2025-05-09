@@ -267,13 +267,17 @@ async def collection(ctx):
 
 @bot.event
 async def on_socket_response(payload):
-    if payload["t"] == "INTERACTION_CREATE":
+    try:
+        # Vérification de la présence de la clé "custom_id"
+        if "custom_id" not in payload["d"]["data"]:
+            print("Erreur : 'custom_id' non trouvé dans l'interaction.")
+            return
+
         custom_id = payload["d"]["data"]["custom_id"]
         user_id = str(payload["d"]["member"]["user"]["id"])
 
         print(f"Interaction reçue : custom_id={custom_id}, user_id={user_id}")
 
-        # Si l'utilisateur appuie sur le bouton SAISON 0
         if custom_id == "season0":
             try:
                 # Filtrer les cartes de la SAISON 0
@@ -322,6 +326,9 @@ async def on_socket_response(payload):
                         "content": "Une erreur est survenue lors de la récupération de tes cartes."
                     }
                 })
+    except Exception as e:
+        print(f"Erreur dans l'événement on_socket_response: {e}")
+
 
 
 
