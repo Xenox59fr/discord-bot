@@ -265,20 +265,23 @@ async def collection(ctx):
     # Envoi du message avec le bouton SAISON 0
     await ctx.send("Clique sur le bouton pour voir tes cartes de la SAISON 0 🎴", view=saison_view)
 
-# Événement quand un utilisateur clique sur un bouton
 @bot.event
 async def on_socket_response(payload):
     if payload["t"] == "INTERACTION_CREATE":
         custom_id = payload["d"]["data"]["custom_id"]
         user_id = str(payload["d"]["member"]["user"]["id"])
 
+        print(f"Interaction reçue : custom_id={custom_id}, user_id={user_id}")
+
         # Si l'utilisateur appuie sur le bouton SAISON 0
         if custom_id == "season0":
             try:
                 # Filtrer les cartes de la SAISON 0
+                print(f"Filtrage des cartes pour user_id={user_id} et saison=0")
                 cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", "0").execute()
 
                 if not cartes_utilisateur.data:
+                    print(f"Aucune carte trouvée pour user_id={user_id} dans la SAISON 0")
                     await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
                         "type": 4,
                         "data": {
@@ -288,6 +291,7 @@ async def on_socket_response(payload):
                     return
 
                 # Créer l'embed pour afficher les cartes de la SAISON 0
+                print(f"Cartes trouvées : {len(cartes_utilisateur.data)} cartes")
                 embed = discord.Embed(
                     title="Cartes SAISON 0",
                     description="Voici tes cartes de la SAISON 0 ! 🎴",
@@ -310,13 +314,14 @@ async def on_socket_response(payload):
                 })
 
             except Exception as e:
-                print(f"Erreur : {e}")
+                print(f"Erreur lors de la récupération des cartes pour {user_id}: {e}")
                 await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
                     "type": 4,
                     "data": {
                         "content": "Une erreur est survenue lors de la récupération de tes cartes."
                     }
                 })
+
 
 
 
