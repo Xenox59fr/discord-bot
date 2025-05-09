@@ -240,12 +240,24 @@ async def buy(ctx, nombre: int = 1):
 })
 
 
-        # Insérer la carte dans la base de données
-        supabase.table("new_user_cards").insert({
-            "user_id": user_id,
-            "card_id": carte["id"],      # Assure-toi que chaque carte dans cartes.json a un champ "id"
-            "rarity": rarete
-        }).execute()
+        ## Insérer dans la table "cartes"
+carte_tiree = {
+    "card_id": carte["id"],
+    "nom": carte["nom"],
+    "image": carte["image"],
+    "rarity": rarete,
+    "season": 0
+}
+
+supabase.table("cartes").insert({
+    "user_id": ctx.author.id,
+    "card_id": carte_tiree["card_id"],
+    "nom": carte_tiree["nom"],
+    "image": carte_tiree["image"],
+    "rarity": carte_tiree["rarity"],
+    "season": carte_tiree["season"]
+}).execute()
+
         try:
             data = {
                 "user_id": user_id,
