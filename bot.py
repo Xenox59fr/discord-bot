@@ -314,15 +314,14 @@ async def on_socket_response(payload):
                 })
 
             except Exception as e:
-                print(f"Erreur lors de la récupération des cartes pour {user_id}: {e}")
+                # Ajouter un log pour capturer toute erreur
+                print(f"Erreur lors de la récupération des cartes SAISON 0 : {e}")
                 await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
                     "type": 4,
                     "data": {
                         "content": "Une erreur est survenue lors de la récupération de tes cartes."
                     }
                 })
-
-
 
 
 
