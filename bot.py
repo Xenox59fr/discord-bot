@@ -231,8 +231,8 @@ async def buy(ctx, nombre: int = 1):
 
         print({
          "user_id": str(ctx.author.id),
-         "card_id": card_id,
-         "rarity": rarity,
+         "card_id": carte["id"],
+         "rarity": rarete,
          "season": 0
 })
 
