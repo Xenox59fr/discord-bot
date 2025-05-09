@@ -282,48 +282,73 @@ async def givecredits(ctx):
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 
 
-# Commande pour afficher la collection
 @bot.command()
 async def collection(ctx):
-    # Création du bouton Saison 0
-    saison_button = Button(label="SAISON 0", custom_id="season0")
-    saison_view = View()
-    saison_view.add_item(saison_button)
+    user_id = str(ctx.author.id)
 
-    # Envoi du message avec le bouton SAISON 0
-    await ctx.send("Clique sur le bouton pour voir tes cartes de la SAISON 0 🎴", view=saison_view)
+    # Récupère toutes les cartes de l'utilisateur pour la saison 0
+    response = supabase.table("cartes").select("*").eq("user_id", user_id).eq("season", 0).execute()
+    cartes = response.data
 
-@bot.event
-async def on_interaction(interaction):
-    # Vérifier si l'interaction est liée au bouton Saison 0
-    if interaction.data["custom_id"] == "season0":
-        user_id = str(interaction.user.id)
+    if not cartes:
+        await ctx.send(f"{ctx.author.mention}, tu n’as aucune carte pour la Saison 0.")
+        return
 
-        # Récupérer les cartes de la SAISON 0 depuis la base de données Supabase
-        cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", "0").execute()
+    # Regroupe les cartes par pages (5 cartes par page par exemple)
+    cartes_par_page = 1
+    total_pages = math.ceil(len(cartes) / cartes_par_page)
 
-        if not cartes_utilisateur.data:
-            await interaction.response.send_message(f"{interaction.user.mention}, tu n'as pas encore de cartes de la SAISON 0.")
-            return
+    async def afficher_page(page):
+        start = page * cartes_par_page
+        end = start + cartes_par_page
+        cartes_page = cartes[start:end]
 
-        # Créer l'embed pour afficher les cartes de la SAISON 0
-        embed = discord.Embed(
-            title="Tes cartes de la SAISON 0",
-            description="Voici tes cartes obtenues durant la SAISON 0 🎴",
-            color=0x9b59b6  # Couleur Saison 0
-        )
+        embed = Embed(title=f"📘 Collection Saison 0 - Page {page + 1}/{total_pages}", color=0x3498db)
+        for carte in cartes_page:
+            nom = carte.get("nom", "Carte inconnue")
+            rarete = carte.get("rarity", "Inconnue")
+            image = carte.get("image", None)
 
-        for carte in cartes_utilisateur.data:
-            # Ajouter l'image de la carte à l'embed
-            embed.add_field(
-                name=f"Carte ID: {carte['card_id']}",
-                value="Clique pour voir l'image",
-                inline=False
-            )
-            embed.set_image(url=carte["image"])  # Assure-toi que chaque carte a un champ "image"
+            embed.add_field(name=nom, value=f"Rareté : {rarete}", inline=False)
 
-        # Répondre à l'interaction avec l'embed contenant les cartes
-        await interaction.response.send_message(embed=embed)
+            if image:
+                embed.set_image(url=image)
+
+        return embed
+
+    # Vue avec boutons
+    class CollectionView(View):
+        def __init__(self):
+            super().__init__()
+            self.page = 0
+
+        @discord.ui.button(label="⬅️", style=discord.ButtonStyle.primary)
+        async def back(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.id != ctx.author.id:
+                await interaction.response.send_message("Ce bouton ne t'appartient pas.", ephemeral=True)
+                return
+            if self.page > 0:
+                self.page -= 1
+                embed = await afficher_page(self.page)
+                await interaction.response.edit_message(embed=embed, view=self)
+
+        @discord.ui.button(label="➡️", style=discord.ButtonStyle.primary)
+        async def next(self, interaction: discord.Interaction, button: Button):
+            if interaction.user.id != ctx.author.id:
+                await interaction.response.send_message("Ce bouton ne t'appartient pas.", ephemeral=True)
+                return
+            if self.page < total_pages - 1:
+                self.page += 1
+                embed = await afficher_page(self.page)
+                await interaction.response.edit_message(embed=embed, view=self)
+
+        @discord.ui.button(label="Saison 0", style=discord.ButtonStyle.secondary, disabled=True)
+        async def saison_zero(self, interaction: discord.Interaction, button: Button):
+            pass  # Bouton statique juste pour affichage
+
+    # Affiche la première page
+    embed = await afficher_page(0)
+    await ctx.send(embed=embed, view=CollectionView())
 
 
 
