@@ -290,6 +290,11 @@ async def collection(ctx):
     user_id = str(ctx.author.id)
     response = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", 0).execute()
     cartes = response.data
+    user_id = ctx.author.id  # ✅ ici on récupère l'ID Discord (int)
+
+    # Ensuite tu peux utiliser cet ID pour faire une requête Supabase
+    response = supabase.table("cartes").select("*").eq("user_id", user_id).eq("season", 0).execute()
+    cartes = response.data
 
     if not cartes:
         await ctx.send(f"{ctx.author.mention}, tu n'as aucune carte pour la Saison 0 📭")
