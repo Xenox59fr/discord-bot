@@ -229,6 +229,14 @@ async def buy(ctx, nombre: int = 1):
         # Vérification avant l'insertion dans la base
         print(f"Insertion carte : user_id={user_id}, card_id={carte['id']}, rarity={rarete}")
 
+        print({
+         "user_id": str(ctx.author.id),
+         "card_id": card_id,
+         "rarity": rarity,
+         "season": 0
+})
+
+
         # Insérer la carte dans la base de données
         supabase.table("new_user_cards").insert({
             "user_id": user_id,
