@@ -171,13 +171,13 @@ def tirer_rarete():
 async def buy(ctx, nombre: int = 1):
     user_id = str(ctx.author.id)
     # Log de la requête avant l'exécution
-        print(f"Achat de {quantity} pack(s) pour {ctx.author.id}")
+    print(f"Achat de {quantity} pack(s) pour {ctx.author.id}")
         response = supabase.table("new_user_cards").insert({
             "user_id": ctx.author.id,
             "quantity": quantity,
             # Ajoute d'autres champs nécessaires ici
         }).execute()
-        print(response)  # Log de la réponse de Supabase
+    print(response)  # Log de la réponse de Supabase
     except Exception as e:
         print(f"Erreur lors de l'achat : {e}")
 
