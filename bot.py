@@ -254,7 +254,8 @@ async def givecredits(ctx):
 
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 
-# Fonction pour afficher la collection de l'utilisateur
+
+# Commande pour afficher la collection
 @bot.command()
 async def collection(ctx):
     # Création du bouton Saison 0
@@ -266,68 +267,36 @@ async def collection(ctx):
     await ctx.send("Clique sur le bouton pour voir tes cartes de la SAISON 0 🎴", view=saison_view)
 
 @bot.event
-async def on_socket_response(payload):
-    try:
-        # Vérification de la présence de la clé "custom_id"
-        if "custom_id" not in payload["d"]["data"]:
-            print("Erreur : 'custom_id' non trouvé dans l'interaction.")
+async def on_interaction(interaction):
+    # Vérifier si l'interaction est liée au bouton Saison 0
+    if interaction.data["custom_id"] == "season0":
+        user_id = str(interaction.user.id)
+
+        # Récupérer les cartes de la SAISON 0 depuis la base de données Supabase
+        cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", "0").execute()
+
+        if not cartes_utilisateur.data:
+            await interaction.response.send_message(f"{interaction.user.mention}, tu n'as pas encore de cartes de la SAISON 0.")
             return
 
-        custom_id = payload["d"]["data"]["custom_id"]
-        user_id = str(payload["d"]["member"]["user"]["id"])
+        # Créer l'embed pour afficher les cartes de la SAISON 0
+        embed = discord.Embed(
+            title="Tes cartes de la SAISON 0",
+            description="Voici tes cartes obtenues durant la SAISON 0 🎴",
+            color=0x9b59b6  # Couleur Saison 0
+        )
 
-        print(f"Interaction reçue : custom_id={custom_id}, user_id={user_id}")
+        for carte in cartes_utilisateur.data:
+            # Ajouter l'image de la carte à l'embed
+            embed.add_field(
+                name=f"Carte ID: {carte['card_id']}",
+                value="Clique pour voir l'image",
+                inline=False
+            )
+            embed.set_image(url=carte["image"])  # Assure-toi que chaque carte a un champ "image"
 
-        if custom_id == "season0":
-            try:
-                # Filtrer les cartes de la SAISON 0
-                print(f"Filtrage des cartes pour user_id={user_id} et saison=0")
-                cartes_utilisateur = supabase.table("new_user_cards").select("*").eq("user_id", user_id).eq("season", "0").execute()
-
-                if not cartes_utilisateur.data:
-                    print(f"Aucune carte trouvée pour user_id={user_id} dans la SAISON 0")
-                    await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
-                        "type": 4,
-                        "data": {
-                            "content": f"{user_id}, tu n'as pas encore de cartes de la SAISON 0."
-                        }
-                    })
-                    return
-
-                # Créer l'embed pour afficher les cartes de la SAISON 0
-                print(f"Cartes trouvées : {len(cartes_utilisateur.data)} cartes")
-                embed = discord.Embed(
-                    title="Cartes SAISON 0",
-                    description="Voici tes cartes de la SAISON 0 ! 🎴",
-                    color=0x9b59b6  # Couleur Saison 0
-                )
-
-                noms_cartes = [f"**{carte['card_id']}**" for carte in cartes_utilisateur.data]
-                embed.add_field(
-                    name=f"SAISON 0 ({len(cartes_utilisateur.data)} cartes)",
-                    value="\n".join(noms_cartes) if noms_cartes else "Aucune carte",
-                    inline=False
-                )
-
-                # Répondre à l'interaction avec l'embed
-                await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
-                    "type": 4,
-                    "data": {
-                        "embeds": [embed.to_dict()]
-                    }
-                })
-
-            except Exception as e:
-                # Ajouter un log pour capturer toute erreur
-                print(f"Erreur lors de la récupération des cartes SAISON 0 : {e}")
-                await bot.http.create_interaction_response(payload["d"]["id"], payload["d"]["token"], {
-                    "type": 4,
-                    "data": {
-                        "content": "Une erreur est survenue lors de la récupération de tes cartes."
-                    }
-                })
-    except Exception as e:
-        print(f"Erreur dans l'événement on_socket_response: {e}")
+        # Répondre à l'interaction avec l'embed contenant les cartes
+        await interaction.response.send_message(embed=embed)
 
 
 
