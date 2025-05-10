@@ -172,54 +172,93 @@ def tirer_rarete():
 
 
 @bot.command()
-async def buy(ctx, nombre: int = 1):
+async def buy(ctx, packs: int = 1):
+    if packs < 1 or packs > 10:
+        await ctx.send("🛑 Tu peux acheter entre 1 et 10 packs maximum.")
+        return
+
     user_id = str(ctx.author.id)
+    user_name = ctx.author.name
 
-    # Vérifie que le nombre est positif
-    if nombre <= 0:
-        await ctx.send("Tu dois acheter au moins 1 pack.")
+    # Vérifie le total_credits
+    try:
+        response = supabase.table("users").select("total_credits").eq("id", user_id).single().execute()
+        total_credits = response.data["total_credits"]
+    except Exception as e:
+        await ctx.send("❌ Erreur : impossible de récupérer tes crédits.")
         return
 
-    # Vérifie que l'utilisateur a assez de crédits
-    response = supabase.table("users").select("credits").eq("id", user_id).single().execute()
-    credits = response.data["credits"] if response.data else 0
-
-    if credits < nombre:
-        await ctx.send(f"Tu n'as pas assez de crédits. Tu as {credits} crédits.")
+    if total_credits < packs:
+        await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
         return
 
-    cartes_tirees = []
+    # Chargement des cartes depuis GitHub
+    try:
+        url = "https://raw.githubusercontent.com/TonUser/TonRepo/main/cartes.json"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                cards_data = await resp.json()
+    except Exception:
+        await ctx.send("❌ Impossible de charger les cartes.")
+        return
 
-    for _ in range(nombre):
-        rarete = tirer_rarete()
+    # Probabilités
+    rarity_weights = {
+        "commune": 60,
+        "rare": 25,
+        "epique": 10,
+        "legendaire": 4,
+        "collab": 1
+    }
 
-        if not cards_by_rarity.get(rarete):
-            await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
-            continue
+    rarity_emojis = {
+        "commune": "⚪",
+        "rare": "🟦",
+        "epique": "🟪",
+        "legendaire": "🟨",
+        "collab": "🌟"
+    }
 
-        carte = random.choice(cards_by_rarity[rarete])
-        cartes_tirees.append(carte)
+    cards_by_rarity = {r: [c for c in cards_data if c["rareté"] == r] for r in rarity_weights}
+    all_rarities = list(rarity_weights.keys())
+    all_weights = list(rarity_weights.values())
 
-        # Ajoute la carte à la collection du joueur
-        supabase.table("user_cards").insert({
-            "user_id": user_id,
-            "card_id": carte["id"]
-        }).execute()
+    tirages = []
 
-    # Déduit les crédits
-    supabase.table("users").update({
-        "credits": credits - nombre
-    }).eq("id", user_id).execute()
+    for _ in range(packs):
+        rarity = random.choices(all_rarities, weights=all_weights, k=1)[0]
+        if cards_by_rarity[rarity]:
+            card = random.choice(cards_by_rarity[rarity])
+            tirages.append((rarity, card))
+        else:
+            continue  # aucune carte dispo pour cette rareté
 
-    # Affiche les cartes tirées
-    if cartes_tirees:
-        message = "**🃏 Cartes obtenues :**\n"
-        for carte in cartes_tirees:
-            emoji = RARETE_COULEURS[carte["rarete"]]["emoji"]
-            message += f"{emoji} **{carte['nom']}** ({carte['rarete']})\n"
-        await ctx.send(message)
-    else:
+    if not tirages:
         await ctx.send("Aucune carte n'a été tirée.")
+        return
+
+    # Mise à jour : total_credits -1 par pack
+    supabase.table("users").update({"total_credits": total_credits - packs}).eq("id", user_id).execute()
+
+    # Mise à jour : +1 tirage par carte (pour défi communautaire)
+    for _ in range(packs):
+        supabase.table("defi").update({"tirages": Supabase.rpc("tirages + 1")}).eq("id", "global").execute()
+
+    embed = discord.Embed(
+        title=f"🎁 {ctx.author.name} a ouvert {packs} pack{'s' if packs > 1 else ''} !",
+        color=0x00ffcc
+    )
+
+    for rarity, card in tirages:
+        emoji = rarity_emojis.get(rarity, "")
+        embed.add_field(
+            name=f"{emoji} {card['nom']} ({rarity.upper()})",
+            value=f"ID: `{card['id']}`",
+            inline=False
+        )
+
+    await ctx.send(embed=embed)
+
 
 
 
