@@ -20,7 +20,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Chargement des cartes
-with open("cards.json", "r", encoding="utf-8") as f:
+with open("cartes.json", "r", encoding="utf-8") as f:
     all_cards = json.load(f)
 
 rarity_probabilities = {
