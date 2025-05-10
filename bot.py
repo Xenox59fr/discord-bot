@@ -258,15 +258,28 @@ supabase.table("cartes").insert({
     "season": carte_tiree["season"]
 }).execute()
 
+# Vérification avant insertion
 try:
+    carte = random.choice(cards_by_rarity[rarete])  # Sélection de la carte
     data = {
         "user_id": user_id,
-        "card_id": carte["id"],  # Assure-toi que "id" existe dans ta carte
+        "card_id": carte["id"],  # Utilisation correcte de "carte"
         "rarity": rarete,
         "season": 0
     }
     print("Données envoyées à Supabase:", data)
     supabase.table("new_user_cards").insert(data).execute()
+
+    # Insérer aussi dans la table "cartes"
+    carte_tiree = {
+        "card_id": carte["id"],
+        "nom": carte["nom"],
+        "image": carte["image"],
+        "rarity": rarete,
+        "season": 0
+    }
+
+    supabase.table("cartes").insert(carte_tiree).execute()
 except Exception as e:
     print("Erreur d'insertion Supabase:", e)
 
