@@ -242,7 +242,7 @@ async def buy(ctx, nombre: int = 1):
 
         ## Insérer dans la table "cartes"
 carte_tiree = {
-    "card_id": carte["id"],
+    "card_id": card["id"],
     "nom": carte["nom"],
     "image": carte["image"],
     "rarity": rarete,
