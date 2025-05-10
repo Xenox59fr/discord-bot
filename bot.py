@@ -304,6 +304,7 @@ async def collection(ctx):
     cartes = response.data
     user_id = ctx.author.id  # ✅ ici on récupère l'ID Discord (int)
     print(f"Résultat Supabase : {cartes}")
+    print("Commande !collection déclenchée")
 
 
     # Ensuite tu peux utiliser cet ID pour faire une requête Supabase
