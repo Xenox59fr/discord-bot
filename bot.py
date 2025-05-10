@@ -193,7 +193,6 @@ for _ in range(nombre):
 
     if not cards_by_rarity[rarete]:
         await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
-        continue
 
 
     carte = random.choice(cards_by_rarity[rarete])
