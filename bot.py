@@ -182,13 +182,12 @@ async def buy(ctx, packs: int = 1):
         return
 
     user_id = str(ctx.author.id)
-    user_name = ctx.author.name
 
-    # Vérifie le total_credits
+    # Vérifie le total_credits (correction ici: "user_id" au lieu de "id")
     try:
-        response = supabase.table("users").select("total_credits").eq("id", user_id).single().execute()
+        response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
         total_credits = response.data["total_credits"]
-    except Exception as e:
+    except Exception:
         await ctx.send("❌ Erreur : impossible de récupérer tes crédits.")
         return
 
@@ -234,20 +233,25 @@ async def buy(ctx, packs: int = 1):
         if cards_by_rarity[rarity]:
             card = random.choice(cards_by_rarity[rarity])
             tirages.append((rarity, card))
-        else:
-            continue  # aucune carte dispo pour cette rareté
 
     if not tirages:
-        await ctx.send("Aucune carte n'a été tirée.")
+        await ctx.send("❌ Aucune carte n'a été tirée.")
         return
 
-    # Mise à jour : total_credits -1 par pack
-    supabase.table("users").update({"total_credits": total_credits - packs}).eq("id", user_id).execute()
+    # Mise à jour des crédits (attention : bien utiliser "user_id")
+    try:
+        supabase.table("users").update({"total_credits": total_credits - packs}).eq("user_id", user_id).execute()
+    except Exception:
+        await ctx.send("❌ Erreur lors de la mise à jour de tes crédits.")
+        return
 
-    # Mise à jour : +1 tirage par carte (pour défi communautaire)
-    for _ in range(packs):
-        supabase.table("defi").update({"tirages": Supabase.rpc("tirages + 1")}).eq("id", "global").execute()
+    # Mise à jour du défi communautaire
+    try:
+        supabase.table("defi").update({"tirages": supabase.table("defi").select("tirages").eq("id", "global").execute().data[0]["tirages"] + packs}).eq("id", "global").execute()
+    except Exception:
+        pass  # ne bloque pas la commande si le défi échoue
 
+    # Envoi de l'embed
     embed = discord.Embed(
         title=f"🎁 {ctx.author.name} a ouvert {packs} pack{'s' if packs > 1 else ''} !",
         color=0x00ffcc
