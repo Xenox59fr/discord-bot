@@ -258,17 +258,18 @@ supabase.table("cartes").insert({
     "season": carte_tiree["season"]
 }).execute()
 
-     try:
-         data = {
-             "user_id": user_id,
-             "card_id": carte["id"],  # Assure-toi que "id" existe dans ta carte
-             "rarity": rarete,
-             "season": 0
-            }
-        print("Données envoyées à Supabase:", data)
-            supabase.table("new_user_cards").insert(data).execute()
-        except Exception as e:
-         print("Erreur d'insertion Supabase:", e)
+try:
+    data = {
+        "user_id": user_id,
+        "card_id": carte["id"],  # Assure-toi que "id" existe dans ta carte
+        "rarity": rarete,
+        "season": 0
+    }
+    print("Données envoyées à Supabase:", data)
+    supabase.table("new_user_cards").insert(data).execute()
+except Exception as e:
+    print("Erreur d'insertion Supabase:", e)
+
 
 
 @bot.command()
@@ -360,7 +361,5 @@ async def collection(ctx):
 
     await ctx.send("📚 Choisis une saison :", view=SaisonButtonView())
 
-
-
-
+print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
 bot.run(TOKEN)
