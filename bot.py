@@ -75,10 +75,14 @@ def remove_credits(user_id, amount):
 @bot.command()
 async def credits(ctx):
     user_id = str(ctx.author.id)
-    init_user(user_id)
-    user = supabase.table('users').select('solde').eq('user_id', user_id).execute()
-    solde = user.data[0]['solde']
-    await ctx.send(f"{ctx.author.mention}, tu as {solde} crédits.")
+
+try:
+    response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
+    total_credits = response.data["total_credits"]
+except Exception as e:
+    await ctx.send("❌ Erreur : impossible de récupérer tes crédits.")
+    return
+
 
 # Commande !daily
 @bot.command()
