@@ -11,6 +11,7 @@ import json
 from discord.ui import Button, View
 import math
 from discord import Embed
+import aiohttp
 
 
 last_credit_time = {}
@@ -71,17 +72,19 @@ def remove_credits(user_id, amount):
         'solde': max(0, supabase.table('users').select('solde').eq('user_id', user_id).execute().data[0]['solde'] - amount)
     }).eq('user_id', user_id).execute()
 
-# Commande !credits
 @bot.command()
 async def credits(ctx):
     user_id = str(ctx.author.id)
 
-try:
-    response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
-    total_credits = response.data["total_credits"]
-except Exception as e:
-    await ctx.send("❌ Erreur : impossible de récupérer tes crédits.")
-    return
+    try:
+        response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
+        total_credits = response.data["total_credits"]
+    except Exception as e:
+        await ctx.send("❌ Erreur : impossible de récupérer tes crédits.")
+        return
+
+    await ctx.send(f"💰 Tu as **{total_credits} crédits**.")
+
 
 
 # Commande !daily
@@ -183,7 +186,6 @@ async def buy(ctx, packs: int = 1):
 
     user_id = str(ctx.author.id)
 
-    # Vérifie le total_credits (correction ici: "user_id" au lieu de "id")
     try:
         response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
         total_credits = response.data["total_credits"]
@@ -195,73 +197,52 @@ async def buy(ctx, packs: int = 1):
         await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
         return
 
-    # Chargement des cartes depuis GitHub
-    try:
-        url = "https://raw.githubusercontent.com/TonUser/TonRepo/main/cartes.json"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                cards_data = await resp.json()
-    except Exception:
-        await ctx.send("❌ Impossible de charger les cartes.")
-        return
-
-    # Probabilités
-    rarity_weights = {
-        "commune": 60,
-        "rare": 25,
-        "epique": 10,
-        "legendaire": 4,
-        "collab": 1
-    }
-
-    rarity_emojis = {
-        "commune": "⚪",
-        "rare": "🟦",
-        "epique": "🟪",
-        "legendaire": "🟨",
-        "collab": "🌟"
-    }
-
-    cards_by_rarity = {r: [c for c in cards_data if c["rareté"] == r] for r in rarity_weights}
-    all_rarities = list(rarity_weights.keys())
-    all_weights = list(rarity_weights.values())
-
+    # 🟩 Utiliser le all_cards local
     tirages = []
 
     for _ in range(packs):
-        rarity = random.choices(all_rarities, weights=all_weights, k=1)[0]
-        if cards_by_rarity[rarity]:
-            card = random.choice(cards_by_rarity[rarity])
-            tirages.append((rarity, card))
+        rarete = tirer_rarete()
+        cartes_possibles = [c for c in all_cards if c["rarete"] == rarete]
+        if cartes_possibles:
+            carte = random.choice(cartes_possibles)
+            tirages.append((rarete, carte))
 
     if not tirages:
         await ctx.send("❌ Aucune carte n'a été tirée.")
         return
 
-    # Mise à jour des crédits (attention : bien utiliser "user_id")
     try:
         supabase.table("users").update({"total_credits": total_credits - packs}).eq("user_id", user_id).execute()
     except Exception:
         await ctx.send("❌ Erreur lors de la mise à jour de tes crédits.")
         return
 
-    # Mise à jour du défi communautaire
     try:
-        supabase.table("defi").update({"tirages": supabase.table("defi").select("tirages").eq("id", "global").execute().data[0]["tirages"] + packs}).eq("id", "global").execute()
+        supabase.table("defi").update({
+            "tirages": supabase.table("defi").select("tirages").eq("id", "global").execute().data[0]["tirages"] + packs
+        }).eq("id", "global").execute()
     except Exception:
-        pass  # ne bloque pas la commande si le défi échoue
+        pass
 
-    # Envoi de l'embed
     embed = discord.Embed(
         title=f"🎁 {ctx.author.name} a ouvert {packs} pack{'s' if packs > 1 else ''} !",
         color=0x00ffcc
     )
 
-    for rarity, card in tirages:
-        emoji = rarity_emojis.get(rarity, "")
+    rarity_emojis = {
+        "commun": "⚪",
+        "rare": "🟦",
+        "epique": "🟪",
+        "legendaire": "🟨",
+        "unique": "💎",
+        "collab": "🌟"
+    }
+
+    for rarete, carte in tirages:
+        emoji = rarity_emojis.get(rarete, "")
         embed.add_field(
-            name=f"{emoji} {card['nom']} ({rarity.upper()})",
-            value=f"ID: `{card['id']}`",
+            name=f"{emoji} {carte['nom']} ({rarete.upper()})",
+            value=f"ID: `{carte['id']}`",
             inline=False
         )
 
