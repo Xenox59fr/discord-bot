@@ -175,49 +175,51 @@ def tirer_rarete():
 async def buy(ctx, nombre: int = 1):
     user_id = str(ctx.author.id)
 
-    if nombre < 1 or nombre > 10:
-        await ctx.send("Tu peux tirer entre 1 et 10 cartes maximum.")
+    # Vérifie que le nombre est positif
+    if nombre <= 0:
+        await ctx.send("Tu dois acheter au moins 1 pack.")
         return
 
-    # Vérifier les crédits
-    credits_data = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
-    if credits_data.data is None or credits_data.data["total_credits"] < nombre:
-        await ctx.send("Tu n’as pas assez de crédits.")
+    # Vérifie que l'utilisateur a assez de crédits
+    response = supabase.table("users").select("credits").eq("id", user_id).single().execute()
+    credits = response.data["credits"] if response.data else 0
+
+    if credits < nombre:
+        await ctx.send(f"Tu n'as pas assez de crédits. Tu as {credits} crédits.")
         return
 
-    # Retirer les crédits
-    supabase.table("users").update({"total_credits": credits_data.data["total_credits"] - nombre}).eq("user_id", user_id).execute()
+    cartes_tirees = []
 
-for _ in range(nombre):
-    rarete = tirer_rarete()
+    for _ in range(nombre):
+        rarete = tirer_rarete()
 
-    if not cards_by_rarity[rarete]:
-        await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
+        if not cards_by_rarity.get(rarete):
+            await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
+            continue
 
+        carte = random.choice(cards_by_rarity[rarete])
+        cartes_tirees.append(carte)
 
-    carte = random.choice(cards_by_rarity[rarete])
+        # Ajoute la carte à la collection du joueur
+        supabase.table("user_cards").insert({
+            "user_id": user_id,
+            "card_id": carte["id"]
+        }).execute()
 
-    # Enregistrement dans la collection du joueur
-    supabase.table("cartes").insert({
-        "user_id": user_id,
-        "card_id": carte["id"],
-        "nom": carte["nom"],
-        "image": carte["image"],
-        "rarity": rarete,
-        "season": 0
-    }).execute()
+    # Déduit les crédits
+    supabase.table("users").update({
+        "credits": credits - nombre
+    }).eq("id", user_id).execute()
 
-    # Embed d'affichage
-    embed = discord.Embed(
-        title=f"🎴 {carte['nom']}",
-        description=f"Tu as obtenu une carte **{rarete.upper()}** !",
-        color=discord.Color.random()
-    )
-    embed.set_image(url=carte["image"])
-    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
-    embed.set_footer(text=f"Rareté : {rarete.upper()}")
-
-    await ctx.send(embed=embed)
+    # Affiche les cartes tirées
+    if cartes_tirees:
+        message = "**🃏 Cartes obtenues :**\n"
+        for carte in cartes_tirees:
+            emoji = RARETE_COULEURS[carte["rarete"]]["emoji"]
+            message += f"{emoji} **{carte['nom']}** ({carte['rarete']})\n"
+        await ctx.send(message)
+    else:
+        await ctx.send("Aucune carte n'a été tirée."))
 
 
 
