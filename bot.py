@@ -186,7 +186,7 @@ async def buy(ctx, nombre: int = 1):
         return
 
     # Retirer les crédits
-    supabase.table("users").update({"total_credits": credits_data.data["credits"] - nombre}).eq("user_id", user_id).execute()
+    supabase.table("users").update({"total_credits": credits_data.data["total_credits"] - nombre}).eq("user_id", user_id).execute()
 
     for _ in range(nombre):
         rarete = tirer_rarete()
