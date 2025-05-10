@@ -219,7 +219,7 @@ async def buy(ctx, nombre: int = 1):
             message += f"{emoji} **{carte['nom']}** ({carte['rarete']})\n"
         await ctx.send(message)
     else:
-        await ctx.send("Aucune carte n'a été tirée."))
+        await ctx.send("Aucune carte n'a été tirée.")
 
 
 
