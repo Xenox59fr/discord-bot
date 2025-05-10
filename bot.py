@@ -160,16 +160,16 @@ with open("cartes.json", "r", encoding="utf-8") as f:
 # Filtrer les cartes par rareté
 cards_by_rarity = {rarity: [c for c in all_cards if c["rarete"] == rarity] for rarity in RARITY_SETTINGS}
 
-# Choix aléatoire selon les probabilités
 def tirer_rarete():
-    total = sum(RARETES.values())
+    total = sum(RARITY_SETTINGS[rarity]["chance"] for rarity in RARITY_SETTINGS)
     rand = random.uniform(0, total)
     cumulative = 0
-    for rarete, poids in RARETES.items():
-        cumulative += poids
+    for rarete, settings in RARITY_SETTINGS.items():
+        cumulative += settings["chance"]
         if rand < cumulative:
             return rarete
     return "commun"
+
 
 @bot.command()
 async def buy(ctx, nombre: int = 1):
