@@ -189,36 +189,35 @@ async def buy(ctx, nombre: int = 1):
     supabase.table("users").update({"total_credits": credits_data.data["total_credits"] - nombre}).eq("user_id", user_id).execute()
 
     for _ in range(nombre):
-        rarete = tirer_rarete()
+    rarete = tirer_rarete()
 
-       if not cards_by_rarity[rarete]:
-    await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
-    continue
+    if not cards_by_rarity[rarete]:
+        await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
+        continue
 
     carte = random.choice(cards_by_rarity[rarete])
 
+    # Enregistrement dans la collection du joueur
+    supabase.table("cartes").insert({
+        "user_id": user_id,
+        "card_id": carte["id"],
+        "nom": carte["nom"],
+        "image": carte["image"],
+        "rarity": rarete,
+        "season": 0
+    }).execute()
 
-        # Enregistrement dans la collection du joueur
-        supabase.table("cartes").insert({
-            "user_id": user_id,
-            "card_id": carte["id"],
-            "nom": carte["nom"],
-            "image": carte["image"],
-            "rarity": rarete,
-            "season": 0
-        }).execute()
+    # Embed d'affichage
+    embed = discord.Embed(
+        title=f"🎴 {carte['nom']}",
+        description=f"Tu as obtenu une carte **{rarete.upper()}** !",
+        color=discord.Color.random()
+    )
+    embed.set_image(url=carte["image"])
+    embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"Rareté : {rarete.upper()}")
 
-        # Embed d'affichage
-        embed = discord.Embed(
-            title=f"🎴 {carte['nom']}",
-            description=f"Tu as obtenu une carte **{rarete.upper()}** !",
-            color=discord.Color.random()
-        )
-        embed.set_image(url=carte["image"])
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
-        embed.set_footer(text=f"Rareté : {rarete.upper()}")
-
-        await ctx.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
 
