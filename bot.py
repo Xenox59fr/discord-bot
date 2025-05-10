@@ -180,7 +180,7 @@ async def buy(ctx, nombre: int = 1):
         return
 
     # Vérifier les crédits
-    credits_data = supabase.table("users").select("credits").eq("user_id", user_id).single().execute()
+    credits_data = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
     if credits_data.data is None or credits_data.data["credits"] < nombre:
         await ctx.send("Tu n’as pas assez de crédits.")
         return
