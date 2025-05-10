@@ -189,7 +189,7 @@ async def buy(ctx, nombre: int = 1):
     supabase.table("users").update({"total_credits": credits_data.data["total_credits"] - nombre}).eq("user_id", user_id).execute()
 
     for _ in range(nombre):
-    rarete = tirer_rarete()
+        rarete = tirer_rarete()
 
     if not cards_by_rarity[rarete]:
         await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
