@@ -66,7 +66,7 @@ async def on_ready():
 @bot.command()
 async def credits(ctx):
     user_id = str(ctx.author.id)
-    response = supabase.table("users").select("credits").eq("user_id", user_id).execute()
+    response = supabase.table("users").select("solde").eq("user_id", user_id).execute()
     user = response.data[0] if response.data else None
 
     if user:
@@ -78,7 +78,7 @@ async def credits(ctx):
 @bot.command()
 async def daily(ctx):
     user_id = str(ctx.author.id)
-    response = supabase.table("users").select("credits", "total_credits").eq("user_id", user_id).execute()
+    response = supabase.table("users").select("solde", "total_credits").eq("user_id", user_id).execute()
     user = response.data[0] if response.data else None
 
     if user:
