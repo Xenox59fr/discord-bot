@@ -241,7 +241,19 @@ async def collection(ctx):
 async def leaderboard(ctx):
     response = supabase.table("users").select("*").order("total_credits", desc=True).limit(10).execute()
     users = response.data
-    if
+    if not users:
+        await ctx.send("Aucun joueur trouvé dans le classement.")
+        return
+
+    embed = discord.Embed(title="🏆 Classement des plus riches", color=0xFFD700)
+    for i, user in enumerate(users, start=1):
+        mention = f"<@{user['user_id']}>"
+        embed.add_field(
+            name=f"{i}. {mention}",
+            value=f"💰 {user['total_credits']} crédits gagnés au total",
+            inline=False
+        )
+    await ctx.send(embed=embed)
 
 
 
