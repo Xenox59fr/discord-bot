@@ -160,16 +160,66 @@ with open("cartes.json", "r", encoding="utf-8") as f:
 # Filtrer les cartes par rareté
 cards_by_rarity = {rarity: [c for c in all_cards if c["rarete"] == rarity] for rarity in RARITY_SETTINGS}
 
-# Fonction pour choisir une rareté selon les chances
+# Choix aléatoire selon les probabilités
 def tirer_rarete():
-    rand = random.uniform(0, 100)
+    total = sum(RARETES.values())
+    rand = random.uniform(0, total)
     cumulative = 0
-    for rarity, data in RARITY_SETTINGS.items():
-        cumulative += data["chance"]
-        if rand <= cumulative:
-            return rarity
+    for rarete, poids in RARETES.items():
+        cumulative += poids
+        if rand < cumulative:
+            return rarete
     return "commun"
 
+@bot.command()
+async def buy(ctx, nombre: int = 1):
+    user_id = str(ctx.author.id)
+
+    if nombre < 1 or nombre > 10:
+        await ctx.send("Tu peux tirer entre 1 et 10 cartes maximum.")
+        return
+
+    # Vérifier les crédits
+    credits_data = supabase.table("users").select("credits").eq("user_id", user_id).single().execute()
+    if credits_data.data is None or credits_data.data["credits"] < nombre:
+        await ctx.send("Tu n’as pas assez de crédits.")
+        return
+
+    # Retirer les crédits
+    supabase.table("users").update({"credits": credits_data.data["credits"] - nombre}).eq("user_id", user_id).execute()
+
+    for _ in range(nombre):
+        rarete = tirer_rarete()
+
+        # Tirage dans les cartes correspondantes
+        cartes = supabase.table("cartes_disponibles").select("*").eq("rarity", rarete).execute()
+        if not cartes.data:
+            await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
+            continue
+
+        carte = random.choice(cartes.data)
+
+        # Enregistrement dans la collection du joueur
+        supabase.table("cartes").insert({
+            "user_id": user_id,
+            "card_id": carte["id"],
+            "nom": carte["nom"],
+            "image": carte["image"],
+            "rarity": rarete,
+            "season": 0
+        }).execute()
+
+        # Embed d'affichage
+        embed = discord.Embed(
+            title=f"🎴 {carte['nom']}",
+            description=f"Tu as obtenu une carte **{rarete.upper()}** !",
+            color=discord.Color.random()
+        )
+        embed.set_image(url=carte["image"])
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar.url)
+        embed.set_footer(text=f"Rareté : {rarete.upper()}")
+
+        await ctx.send(embed=embed)
 
 
 
