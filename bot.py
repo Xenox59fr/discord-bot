@@ -191,13 +191,12 @@ async def buy(ctx, nombre: int = 1):
     for _ in range(nombre):
         rarete = tirer_rarete()
 
-        # Tirage dans les cartes correspondantes
-        cartes = supabase.table("cartes_disponibles").select("*").eq("rarity", rarete).execute()
-        if not cartes.data:
-            await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
-            continue
+       if not cards_by_rarity[rarete]:
+    await ctx.send(f"Aucune carte trouvée pour la rareté {rarete}.")
+    continue
 
-        carte = random.choice(cartes.data)
+    carte = random.choice(cards_by_rarity[rarete])
+
 
         # Enregistrement dans la collection du joueur
         supabase.table("cartes").insert({
