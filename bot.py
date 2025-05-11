@@ -197,9 +197,7 @@ async def buy(ctx, packs: int = 1):
         await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
         return
 
-    # 🟩 Utiliser le all_cards local
     tirages = []
-
     for _ in range(packs):
         rarete = tirer_rarete()
         cartes_possibles = [c for c in all_cards if c["rarete"] == rarete]
@@ -224,29 +222,55 @@ async def buy(ctx, packs: int = 1):
     except Exception:
         pass
 
-    embed = discord.Embed(
-        title=f"🎁 {ctx.author.name} a ouvert {packs} pack{'s' if packs > 1 else ''} !",
-        color=0x00ffcc
-    )
-
-    rarity_emojis = {
-        "commun": "⚪",
-        "rare": "🟦",
-        "epique": "🟪",
-        "legendaire": "🟨",
-        "unique": "💎",
-        "collab": "🌟"
+    # 🎨 Données par rareté
+    rarity_data = {
+        "commun": {
+            "emoji": "⚪",
+            "color": 0xB0B0B0,
+            "phrase": "Une brise légère... la légende commence à peine."
+        },
+        "rare": {
+            "emoji": "🔵",
+            "color": 0x3498DB,
+            "phrase": "Un éclat bleu traverse l’ombre. La chance tourne."
+        },
+        "epique": {
+            "emoji": "🟣",
+            "color": 0x9B59B6,
+            "phrase": "L’écho d’un pouvoir oublié résonne dans le néant."
+        },
+        "legendaire": {
+            "emoji": "✨",
+            "color": 0xF1C40F,
+            "phrase": "Une relique ancestrale vient de surgir... L’histoire s’écrit."
+        },
+        "unique": {
+            "emoji": "🧡",
+            "color": 0xE67E22,
+            "phrase": "Une entité singulière t’a choisi... Invoquée du fond des âges."
+        },
+        "collab": {
+            "emoji": "🌟",
+            "color": 0x00FFF7,
+            "phrase": "D’un autre monde... une convergence d’univers s’est produite."
+        }
     }
 
+    # 🔁 Une embed par carte
     for rarete, carte in tirages:
-        emoji = rarity_emojis.get(rarete, "")
-        embed.add_field(
-            name=f"{emoji} {carte['nom']} ({rarete.upper()})",
-            value=f"ID: `{carte['id']}`",
-            inline=False
+        data = rarity_data.get(rarete, {})
+        embed = discord.Embed(
+            title=f"{data.get('emoji', '')} {carte['nom']} ({rarete.upper()})",
+            description=data.get("phrase", ""),
+            color=data.get("color", 0xFFFFFF)
         )
+        embed.set_footer(text=f"ID: {carte['id']}")
+        if "image" in carte:
+            embed.set_image(url=carte["image"])
+        else:
+            embed.set_image(url="https://example.com/default_image.png")  # à adapter
+        await ctx.send(embed=embed)
 
-    await ctx.send(embed=embed)
 
 
 
