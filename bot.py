@@ -257,31 +257,20 @@ async def buy(ctx, packs: int = 1):
     }
 
     # 🔁 Une embed par carte
-    for rarete, carte in tirages:
-        data = rarity_data.get(rarete, {})
-        embed = discord.Embed(
-            title=f"{data.get('emoji', '')} {carte['nom']} ({rarete.upper()})",
-            description=data.get("phrase", ""),
-            color=data.get("color", 0xFFFFFF)
-        )
-        embed.set_footer(text=f"ID: {carte['id']}")
-        if "image" in carte:
-            embed.set_image(url=carte["image"])
-        else:
-            embed.set_image(url="https://example.com/default_image.png")  # à adapter
-        await ctx.send(embed=embed)
-            embed = discord.Embed(
-              title=f"{data.get('emoji', '')} {carte['nom']} ({rarete.upper()})",
-              description=data.get("phrase", ""),
-              color=data.get("color", 0xFFFFFF)
-        )
-        embed.set_author(name=f"{ctx.author.name}", icon_url=ctx.author.avatar.url)
-        embed.set_footer(text=f"ID: {carte['id']}")
-        if "image" in carte:
-            embed.set_image(url=carte["image"])
-        else:
-            embed.set_image(url="https://example.com/default_image.png")
-        await ctx.send(embed=embed)
+for rarete, carte in tirages:
+    data = rarity_data.get(rarete, {})
+    embed = discord.Embed(
+        title=f"{data.get('emoji', '')} {carte['nom']} ({rarete.upper()})",
+        description=data.get("phrase", ""),
+        color=data.get("color", 0xFFFFFF)
+    )
+    embed.set_author(name=f"{ctx.author.name}", icon_url=ctx.author.avatar.url)
+    embed.set_footer(text=f"ID: {carte['id']}")
+    if "image" in carte:
+        embed.set_image(url=carte["image"])
+    else:
+        embed.set_image(url="https://example.com/default_image.png")  # à adapter
+    await ctx.send(embed=embed)
 
 
 
