@@ -455,7 +455,9 @@ async def fetch_cartes_json():
         async with session.get(url) as resp:
             if resp.status != 200:
                 return None
-            return await resp.json()
+            text = await resp.text()  # on lit le texte brut
+            return json.loads(text)   # on convertit manuellement en JSON
+
 
 
 
