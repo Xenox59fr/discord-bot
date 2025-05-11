@@ -318,42 +318,30 @@ async def givecredits(ctx):
 @bot.command()
 async def collection(ctx):
     user_id = str(ctx.author.id)
-    data = await fetch_cartes_json()
 
-    if data is None:
-        await ctx.send("❌ Erreur : impossible de charger les cartes depuis GitHub.")
+    # 1. Tu récupères les cartes que l'utilisateur possède (dans Supabase)
+    response = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
+    user_cards = response.data  # liste de cartes avec card_id
+
+    if not user_cards:
+        await ctx.send("Tu ne possèdes encore aucune carte.")
         return
 
-    user_cartes = data.get(user_id, [])
-    if not user_cartes:
-        await ctx.send("📭 Tu n'as aucune carte dans ta collection.")
-        return
+    # 2. Tu récupères la liste complète des cartes (le JSON en ligne)
+    data = await fetch_cartes_json()  # ça te donne une liste
 
-    cartes_saison0 = [c for c in user_cartes if c["season"] == "0"]
-    if not cartes_saison0:
-        await ctx.send("📭 Tu n'as aucune carte pour la Saison 0.")
-        return
+    # 3. Tu fais correspondre les cartes de l'utilisateur avec les infos du JSON
+    owned_cards = []
+    for card in user_cards:
+        # card_id vient de la base Supabase
+        match = next((c for c in data if c["id"] == card["card_id"]), None)
+        if match:
+            owned_cards.append(match)
 
-    rarity_data = {
-        "commun": {"emoji": "⚪", "color": 0xB0B0B0},
-        "rare": {"emoji": "🔵", "color": 0x3498DB},
-        "epique": {"emoji": "🟣", "color": 0x9B59B6},
-        "legendaire": {"emoji": "✨", "color": 0xF1C40F},
-        "unique": {"emoji": "🧡", "color": 0xE67E22},
-        "collab": {"emoji": "🌟", "color": 0x00FFF7}
-    }
+    # 4. Tu peux ensuite paginer ou afficher les cartes
+    for card in owned_cards:
+        await ctx.send(f"**{card['nom']}**\n{card['rarete'].capitalize()}\n{card['image']}")
 
-    embeds = []
-    for i, carte in enumerate(cartes_saison0):
-        rdata = rarity_data.get(carte["rarity"], {"emoji": "❓", "color": 0xFFFFFF})
-        embed = discord.Embed(
-            title=f"{rdata['emoji']} {carte['nom']} ({carte['rarity'].upper()})",
-            color=rdata["color"]
-        )
-        embed.set_footer(text=f"Page {i+1}/{len(cartes_saison0)} • ID: {carte['card_id']}")
-        embed.set_author(name=f"📚 Collection de {ctx.author.name} - Saison 0")
-        embed.set_image(url=carte.get("image", "https://example.com/default_image.png"))
-        embeds.append(embed)
 
     view = CollectionViewLocal(ctx.author.id, embeds)
     await ctx.send(embed=embeds[0], view=view)
