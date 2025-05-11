@@ -222,7 +222,6 @@ async def buy(ctx, packs: int = 1):
     except Exception:
         pass
 
-    # 🎨 Données par rareté
     rarity_data = {
         "commun": {
             "emoji": "⚪",
@@ -256,7 +255,6 @@ async def buy(ctx, packs: int = 1):
         }
     }
 
-        # 🔁 Une embed par carte
     for rarete, carte in tirages:
         data = rarity_data.get(rarete, {})
         embed = discord.Embed(
@@ -271,6 +269,20 @@ async def buy(ctx, packs: int = 1):
         else:
             embed.set_image(url="https://example.com/default_image.png")  # à adapter
         await ctx.send(embed=embed)
+
+        # 💾 Enregistrement dans Supabase
+        try:
+            supabase.table("cartes").insert({
+                "user_id": user_id,
+                "card_id": carte["id"],
+                "nom": carte["nom"],
+                "image": carte.get("image", "https://example.com/default_image.png"),
+                "rarity": rarete,
+                "season": carte.get("season", "0")
+            }).execute()
+        except Exception as e:
+            print(f"Erreur enregistrement carte : {e}")
+
 
 
 
