@@ -319,35 +319,33 @@ async def givecredits(ctx):
 async def collection(ctx):
     user_id = str(ctx.author.id)
 
-    # 1. Tu récupères les cartes que l'utilisateur possède (dans Supabase)
+    # 1. Tu récupères les cartes de l'utilisateur depuis Supabase
     response = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
-    user_cards = response.data  # liste de cartes avec card_id
+    user_cards = response.data
 
     if not user_cards:
         await ctx.send("Tu ne possèdes encore aucune carte.")
         return
 
-    # 2. Tu récupères la liste complète des cartes (le JSON en ligne)
-    data = await fetch_cartes_json()  # ça te donne une liste
+    # 2. Tu charges les infos complètes des cartes depuis GitHub
+    data = await fetch_cartes_json()
 
-    # 3. Tu fais correspondre les cartes de l'utilisateur avec les infos du JSON
-    owned_cards = []
-    for card in user_cards:
-        # card_id vient de la base Supabase
-        match = next((c for c in data if c["id"] == card["card_id"]), None)
+    # 3. Tu fusionnes les infos Supabase avec le JSON public
+    cartes_saison0 = []
+    for c in user_cards:
+        match = next((item for item in data if item["id"] == c["card_id"]), None)
         if match:
-            owned_cards.append(match)
+            match["card_id"] = c["card_id"]  # pour footer
+            cartes_saison0.append(match)
 
-    # 4. Tu peux ensuite paginer ou afficher les cartes
-    for card in owned_cards:
-        await ctx.send(f"**{card['nom']}**\n{card['rarete'].capitalize()}\n{card['image']}")
-        view = CollectionViewLocal(ctx.author.id, embeds)
-await ctx.send(embed=embeds[0], view=view)
+    if not cartes_saison0:
+        await ctx.send("📭 Aucune carte trouvée pour cette saison.")
+        return
 
+    # 4. Tu envoies la collection avec ta vue personnalisée
+    view = CollectionView(ctx.author.id, cartes_saison0, saison="0")
+    await ctx.send(embed=view.embeds[0], view=view)
 
-
-    view = CollectionViewLocal(ctx.author.id, embeds)
-    await ctx.send(embed=embeds[0], view=view)
 
 
     view = CollectionView(ctx.author.id, cartes_saison0, saison="0")
