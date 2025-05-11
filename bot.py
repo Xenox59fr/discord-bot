@@ -341,6 +341,9 @@ async def collection(ctx):
     # 4. Tu peux ensuite paginer ou afficher les cartes
     for card in owned_cards:
         await ctx.send(f"**{card['nom']}**\n{card['rarete'].capitalize()}\n{card['image']}")
+        view = CollectionViewLocal(ctx.author.id, embeds)
+await ctx.send(embed=embeds[0], view=view)
+
 
 
     view = CollectionViewLocal(ctx.author.id, embeds)
@@ -445,6 +448,36 @@ async def fetch_cartes_json():
                 return None
             text = await resp.text()  # on lit le texte brut
             return json.loads(text)   # on convertit manuellement en JSON
+class CollectionViewLocal(View):
+    def __init__(self, user_id, embeds):
+        super().__init__(timeout=60)
+        self.user_id = user_id
+        self.embeds = embeds
+        self.current_page = 0
+
+        self.prev_button = Button(label="◀️", style=discord.ButtonStyle.secondary)
+        self.next_button = Button(label="▶️", style=discord.ButtonStyle.secondary)
+        self.prev_button.callback = self.go_previous
+        self.next_button.callback = self.go_next
+
+        self.add_item(self.prev_button)
+        self.add_item(self.next_button)
+
+    async def go_previous(self, interaction):
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("Tu ne peux pas utiliser cette navigation.", ephemeral=True)
+            return
+
+        self.current_page = (self.current_page - 1) % len(self.embeds)
+        await interaction.response.edit_message(embed=self.embeds[self.current_page], view=self)
+
+    async def go_next(self, interaction):
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("Tu ne peux pas utiliser cette navigation.", ephemeral=True)
+            return
+
+        self.current_page = (self.current_page + 1) % len(self.embeds)
+        await interaction.response.edit_message(embed=self.embeds[self.current_page], view=self)
 
 
 
