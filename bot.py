@@ -318,24 +318,46 @@ async def givecredits(ctx):
 @bot.command()
 async def collection(ctx):
     user_id = str(ctx.author.id)
+    data = await fetch_cartes_json()
 
-    try:
-        result = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
-        cartes = result.data
-    except Exception as e:
-        await ctx.send("❌ Erreur lors de la récupération de ta collection.")
+    if data is None:
+        await ctx.send("❌ Erreur : impossible de charger les cartes depuis GitHub.")
         return
 
-    if not cartes:
+    user_cartes = data.get(user_id, [])
+    if not user_cartes:
         await ctx.send("📭 Tu n'as aucune carte dans ta collection.")
         return
 
-    # On commence par Saison 0
-    cartes_saison0 = [c for c in cartes if c["season"] == "0"]
-
+    cartes_saison0 = [c for c in user_cartes if c["season"] == "0"]
     if not cartes_saison0:
         await ctx.send("📭 Tu n'as aucune carte pour la Saison 0.")
         return
+
+    rarity_data = {
+        "commun": {"emoji": "⚪", "color": 0xB0B0B0},
+        "rare": {"emoji": "🔵", "color": 0x3498DB},
+        "epique": {"emoji": "🟣", "color": 0x9B59B6},
+        "legendaire": {"emoji": "✨", "color": 0xF1C40F},
+        "unique": {"emoji": "🧡", "color": 0xE67E22},
+        "collab": {"emoji": "🌟", "color": 0x00FFF7}
+    }
+
+    embeds = []
+    for i, carte in enumerate(cartes_saison0):
+        rdata = rarity_data.get(carte["rarity"], {"emoji": "❓", "color": 0xFFFFFF})
+        embed = discord.Embed(
+            title=f"{rdata['emoji']} {carte['nom']} ({carte['rarity'].upper()})",
+            color=rdata["color"]
+        )
+        embed.set_footer(text=f"Page {i+1}/{len(cartes_saison0)} • ID: {carte['card_id']}")
+        embed.set_author(name=f"📚 Collection de {ctx.author.name} - Saison 0")
+        embed.set_image(url=carte.get("image", "https://example.com/default_image.png"))
+        embeds.append(embed)
+
+    view = CollectionViewLocal(ctx.author.id, embeds)
+    await ctx.send(embed=embeds[0], view=view)
+
 
     view = CollectionView(ctx.author.id, cartes_saison0, saison="0")
     await ctx.send(embed=view.embeds[0], view=view)
@@ -425,6 +447,16 @@ class SaisonButton(discord.ui.Button):
             await interaction.response.edit_message(embed=new_view.embeds[0], view=new_view)
         except:
             await interaction.response.send_message("❌ Erreur en changeant de saison.", ephemeral=True)
+            import aiohttp
+
+async def fetch_cartes_json():
+    url = "https://raw.githubusercontent.com/TON_UTILISATEUR/TON_REPO/main/cartes.json"  # à adapter
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status != 200:
+                return None
+            return await resp.json()
+
 
 
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
