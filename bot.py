@@ -450,12 +450,13 @@ class SaisonButton(discord.ui.Button):
             import aiohttp
 
 async def fetch_cartes_json():
-    url = "https://github.com/Xenox59fr/discord-bot/blob/main/cartes.json"  # à adapter
+    url = "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/cartes.json"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             if resp.status != 200:
                 return None
             return await resp.json()
+
 
 
 
