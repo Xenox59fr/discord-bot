@@ -353,13 +353,6 @@ class NextButton(discord.ui.Button):
 
 @bot.command()
 async def collection(ctx):
-    ...
-    view = CollectionViewSimple(ctx.author.id, cartes)
-    await ctx.send(embed=view.embeds[view.page], view=view)
-
-
-@bot.command()
-async def collection(ctx):
     user_id = str(ctx.author.id)
     season = "0"  # adapte si nécessaire
 
@@ -375,8 +368,10 @@ async def collection(ctx):
         await ctx.send("📭 Aucune carte trouvée pour cette saison.")
         return
 
+    # Création de la vue avec les cartes récupérées
     view = CollectionViewSimple(ctx.author.id, cartes)
     await ctx.send(embed=view.embeds[view.page], view=view)
+
 
 
 
