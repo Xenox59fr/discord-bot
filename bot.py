@@ -406,6 +406,58 @@ async def collection(ctx):
     view = CollectionViewSimple(ctx.author.id, cartes)
     await ctx.send(embed=view.embeds[view.page], view=view)
 
+async def ajouter_carte(user_id, carte):
+    # Vérifier si la carte a déjà une description, sinon, ajouter une description par défaut
+    description = carte.get('description', 'Aucune description disponible.')
+
+    # Insérer la carte dans la table Supabase
+    await supabase.from_("cartes").insert({
+        "user_id": user_id,
+        "card_id": carte['id'],
+        "nom": carte['nom'],
+        "image": carte['image'],
+        "rarity": carte['rarity'],
+        "season": carte['season'],
+        "description": description  # Assurez-vous d'ajouter la description ici
+    }).execute()
+    
+def obtenir_description_par_defaut(carte):
+    """Retourne une description par défaut pour la carte si elle n'en a pas."""
+    if 'description' not in carte or carte['description'] == "":
+        return "Aucune description disponible."
+    return carte['description']
+
+# Lors de l'ajout dans Supabase :
+description = obtenir_description_par_defaut(carte)
+
+await supabase.from_("cartes").insert({
+    "user_id": user_id,
+    "card_id": carte['id'],
+    "nom": carte['nom'],
+    "image": carte['image'],
+    "rarity": carte['rarity'],
+    "season": carte['season'],
+    "description": description  # Si pas de description, la par défaut sera utilisée
+}).execute()
+
+@bot.command()
+async def tirer_carte(ctx):
+    # Supposons que la carte soit obtenue après un tirage
+    carte = obtenir_carte_aleatoire()  # Fonction que tu as déjà définie
+
+    # Attribution de la description
+    description = obtenir_description_par_defaut(carte)
+
+    # Ajout de la carte à la base de données
+    await ajouter_carte(ctx.author.id, carte)
+
+    # Création et envoi du message
+    embed = discord.Embed(title=carte['nom'], description=description)
+    embed.set_image(url=carte['image'])
+    await ctx.send(embed=embed)
+
+
+
 
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
 bot.run(TOKEN)
