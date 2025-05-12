@@ -184,6 +184,10 @@ async def buy(ctx, packs: int = 1):
     if packs < 1 or packs > 10:
         await ctx.send("🛑 Tu peux acheter entre 1 et 10 packs maximum.")
         return
+        for rarete, carte in tirages:
+    # autre logique
+    await ajouter_carte_suppabase(user_id, carte, rarete)
+
 
     user_id = str(ctx.author.id)
 
@@ -430,15 +434,15 @@ def obtenir_description_par_defaut(carte):
 # Lors de l'ajout dans Supabase :
 description = obtenir_description_par_defaut(carte)
 
-await supabase.from_("cartes").insert({
-    "user_id": user_id,
-    "card_id": carte['id'],
-    "nom": carte['nom'],
-    "image": carte['image'],
-    "rarity": carte['rarity'],
-    "season": carte['season'],
-    "description": description  # Si pas de description, la par défaut sera utilisée
-}).execute()
+async def ajouter_carte_suppabase(user_id, carte, rarete):
+    await supabase.from_("cartes").insert({
+        "user_id": user_id,
+        "card_id": carte["id"],
+        "nom": carte["nom"],
+        "image": carte.get("image", "https://example.com/default_image.png"),
+        "rarity": rarete,
+        "season": carte.get("season", "0")
+    }).execute()
 
 @bot.command()
 async def tirer_carte(ctx):
@@ -455,20 +459,6 @@ async def tirer_carte(ctx):
     embed = discord.Embed(title=carte['nom'], description=description)
     embed.set_image(url=carte['image'])
     await ctx.send(embed=embed)
-
-
-
-
-print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
-bot.run(TOKEN)
-
-
-
-
-
-
-
-
 
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
 bot.run(TOKEN)
