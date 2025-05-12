@@ -373,7 +373,7 @@ class NextButton(discord.ui.Button):
         if view.page < len(view.embeds) - 1:
             view.page += 1
             await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
-   async def fetch_cartes_json():
+    async def fetch_cartes_json():
     url = "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/cartes.json"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
