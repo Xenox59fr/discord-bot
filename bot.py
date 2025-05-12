@@ -13,7 +13,8 @@ import math
 from discord import Embed
 import aiohttp
 
-
+# Dictionnaire en mémoire : user_id -> liste de card_id
+cartes_obtenues = {}
 last_credit_time = {}
 
 
@@ -316,95 +317,49 @@ async def givecredits(ctx):
 
 
 @bot.command()
-async def collection(ctx):
+async def buy(ctx):
     user_id = str(ctx.author.id)
 
-    # 1. Tu récupères les cartes de l'utilisateur depuis Supabase
-    response = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
-    user_cards = response.data
+    # Simule un tirage aléatoire (dans le vrai bot tu prendras ça depuis cartes.json)
+    random_id = random.randint(1, 10)  # Supposons 10 cartes max
+    cartes_obtenues.setdefault(user_id, []).append(str(random_id))
 
-    if not user_cards:
-        await ctx.send("Tu ne possèdes encore aucune carte.")
-        return
-
-    # 2. Tu charges les infos complètes des cartes depuis GitHub
-    data = await fetch_cartes_json()
-
-    # 3. Tu fusionnes les infos Supabase avec le JSON public
-    cartes_saison0 = []
-    for c in user_cards:
-        match = next((item for item in data if item["id"] == c["card_id"]), None)
-        if match:
-            match["card_id"] = c["card_id"]  # pour footer
-            cartes_saison0.append(match)
-
-    if not cartes_saison0:
-        await ctx.send("📭 Aucune carte trouvée pour cette saison.")
-        return
-
-    # 4. Tu envoies la collection avec ta vue personnalisée
-    view = CollectionView(ctx.author.id, cartes_saison0, saison="0")
-    await ctx.send(embed=view.embeds[0], view=view)
-
-
-
-    view = CollectionView(ctx.author.id, cartes_saison0, saison="0")
-    await ctx.send(embed=view.embeds[0], view=view)
-class CollectionView(discord.ui.View):
-    def __init__(self, user_id, cartes, saison="0"):
-        super().__init__(timeout=None)
+    await ctx.send(f"🎴 Tu as obtenu la carte `{random_id}` !")
+class CollectionViewSimple(discord.ui.View):
+    def __init__(self, user_id, cartes):
+        super().__init__(timeout=60)
         self.user_id = user_id
         self.cartes = cartes
         self.page = 0
-        self.saison = saison
-        self.embeds = self.generate_embeds()
+        self.embeds = self.make_embeds()
         self.update_buttons()
 
-    def generate_embeds(self):
-        rarity_data = {
-            "commun": {"emoji": "⚪", "color": 0xB0B0B0},
-            "rare": {"emoji": "🔵", "color": 0x3498DB},
-            "epique": {"emoji": "🟣", "color": 0x9B59B6},
-            "legendaire": {"emoji": "✨", "color": 0xF1C40F},
-            "unique": {"emoji": "🧡", "color": 0xE67E22},
-            "collab": {"emoji": "🌟", "color": 0x00FFF7}
-        }
-
+    def make_embeds(self):
         embeds = []
-        for i, carte in enumerate(self.cartes):
-            rdata = rarity_data.get(carte["rarity"], {"emoji": "❓", "color": 0xFFFFFF})
+        for i, c in enumerate(self.cartes):
             embed = discord.Embed(
-                title=f"{rdata['emoji']} {carte['nom']} ({carte['rarity'].upper()})",
-                color=rdata['color']
+                title=f"{c['nom']} ({c['rarete'].capitalize()})",
+                color=0x2F3136
             )
-            embed.set_footer(text=f"Page {i+1}/{len(self.cartes)} • ID: {carte['card_id']}")
-            if carte.get("image"):
-                embed.set_image(url=carte["image"])
-            else:
-                embed.set_image(url="https://example.com/default_image.png")  # à personnaliser
-            embed.set_author(name=f"📚 Collection de {self.user_name(ctx=self.user_id)} - Saison {self.saison}")
+            embed.set_image(url=c["image"])
+            embed.set_footer(text=f"Carte {i+1}/{len(self.cartes)}")
             embeds.append(embed)
         return embeds
-
-    async def interaction_check(self, interaction):
-        return interaction.user.id == self.user_id
 
     def update_buttons(self):
         self.clear_items()
         self.add_item(PreviousButton())
         self.add_item(NextButton())
-        self.add_item(SaisonButton(label="Saison 0", saison="0"))
 
-    def user_name(self, ctx):
-        user = bot.get_user(int(ctx))
-        return user.name if user else "?"
+    async def interaction_check(self, interaction):
+        return interaction.user.id == self.user_id
 
 class PreviousButton(discord.ui.Button):
     def __init__(self):
         super().__init__(label="◀️", style=discord.ButtonStyle.secondary)
 
     async def callback(self, interaction):
-        view: CollectionView = self.view
+        view: CollectionViewSimple = self.view
         if view.page > 0:
             view.page -= 1
             await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
@@ -414,68 +369,36 @@ class NextButton(discord.ui.Button):
         super().__init__(label="▶️", style=discord.ButtonStyle.secondary)
 
     async def callback(self, interaction):
-        view: CollectionView = self.view
+        view: CollectionViewSimple = self.view
         if view.page < len(view.embeds) - 1:
             view.page += 1
             await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
-
-class SaisonButton(discord.ui.Button):
-    def __init__(self, label, saison):
-        super().__init__(label=label, style=discord.ButtonStyle.primary)
-        self.saison = saison
-
-    async def callback(self, interaction):
-        view: CollectionView = self.view
-        try:
-            result = supabase.table("cartes").select("*").eq("user_id", str(interaction.user.id)).execute()
-            cartes = [c for c in result.data if c["season"] == self.saison]
-            if not cartes:
-                await interaction.response.send_message("📭 Aucune carte dans cette saison.", ephemeral=True)
-                return
-            new_view = CollectionView(interaction.user.id, cartes, saison=self.saison)
-            await interaction.response.edit_message(embed=new_view.embeds[0], view=new_view)
-        except:
-            await interaction.response.send_message("❌ Erreur en changeant de saison.", ephemeral=True)
-            import aiohttp
-
-async def fetch_cartes_json():
+   async def fetch_cartes_json():
     url = "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/cartes.json"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             if resp.status != 200:
                 return None
-            text = await resp.text()  # on lit le texte brut
-            return json.loads(text)   # on convertit manuellement en JSON
-class CollectionViewLocal(View):
-    def __init__(self, user_id, embeds):
-        super().__init__(timeout=60)
-        self.user_id = user_id
-        self.embeds = embeds
-        self.current_page = 0
+            return await resp.json()
+@bot.command()
+async def collection(ctx):
+    user_id = str(ctx.author.id)
+    season = "0"  # adapte si nécessaire
 
-        self.prev_button = Button(label="◀️", style=discord.ButtonStyle.secondary)
-        self.next_button = Button(label="▶️", style=discord.ButtonStyle.secondary)
-        self.prev_button.callback = self.go_previous
-        self.next_button.callback = self.go_next
+    try:
+        # Récupérer les cartes de l'utilisateur depuis Supabase
+        result = supabase.table("cartes").select("*").eq("user_id", user_id).eq("season", season).execute()
+        cartes = result.data
+    except Exception as e:
+        await ctx.send("❌ Erreur lors de la récupération de ta collection.")
+        return
 
-        self.add_item(self.prev_button)
-        self.add_item(self.next_button)
+    if not cartes:
+        await ctx.send("📭 Aucune carte trouvée pour cette saison.")
+        return
 
-    async def go_previous(self, interaction):
-        if interaction.user.id != self.user_id:
-            await interaction.response.send_message("Tu ne peux pas utiliser cette navigation.", ephemeral=True)
-            return
-
-        self.current_page = (self.current_page - 1) % len(self.embeds)
-        await interaction.response.edit_message(embed=self.embeds[self.current_page], view=self)
-
-    async def go_next(self, interaction):
-        if interaction.user.id != self.user_id:
-            await interaction.response.send_message("Tu ne peux pas utiliser cette navigation.", ephemeral=True)
-            return
-
-        self.current_page = (self.current_page + 1) % len(self.embeds)
-        await interaction.response.edit_message(embed=self.embeds[self.current_page], view=self)
+    view = CollectionViewSimple(ctx.author.id, cartes)
+    await ctx.send(embed=view.embeds[view.page], view=view)
 
 
 
