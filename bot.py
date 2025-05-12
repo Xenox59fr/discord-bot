@@ -329,7 +329,7 @@ class CollectionViewSimple(discord.ui.View):
         # Génère les embeds selon les cartes (simplifié ici)
         return [discord.Embed(title="Ma collection", description="...")]
 
-       async def interaction_check(self, interaction):
+    async def interaction_check(self, interaction):
         return interaction.user.id == self.user_id
 
     async def callback(self, interaction):
@@ -337,7 +337,6 @@ class CollectionViewSimple(discord.ui.View):
         if view.page < len(view.embeds) - 1:
             view.page += 1
             await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
-
 def ajouter_carte_local(user_id, carte):
     fichier = "inventaire.json"
     if not os.path.exists(fichier):
