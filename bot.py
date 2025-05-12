@@ -184,40 +184,10 @@ async def buy(ctx, packs: int = 1):
     if packs < 1 or packs > 10:
         await ctx.send("🛑 Tu peux acheter entre 1 et 10 packs maximum.")
         return
-for rarete, carte in tirages:
-    data = rarity_data.get(rarete, {})
-    embed = discord.Embed(
-        title=f"{data.get('emoji', '')} {carte['nom']} ({rarete.upper()})",
-        description=data.get("phrase", ""),
-        color=data.get("color", 0xFFFFFF)
-    )
-    embed.set_author(name=f"{ctx.author.name}", icon_url=ctx.author.avatar.url)
-    embed.set_footer(text=f"ID: {carte['id']}")
-    if "image" in carte:
-        embed.set_image(url=carte["image"])
-    else:
-        embed.set_image(url="https://example.com/default_image.png")  # à adapter
-    await ctx.send(embed=embed)
-
-    # 💾 Enregistrement dans Supabase
-    try:
-        supabase.table("cartes").insert({
-            "user_id": user_id,
-            "card_id": carte["id"],
-            "nom": carte["nom"],
-            "image": carte.get("image", "https://example.com/default_image.png"),
-            "rarity": rarete,
-            "season": carte.get("season", "0")
-        }).execute()
-    except Exception as e:
-        print(f"Erreur enregistrement carte : {e}")
-
-    # autre logique
-    await ajouter_carte_suppabase(user_id, carte, rarete)
-
 
     user_id = str(ctx.author.id)
 
+    # Récupérer les crédits
     try:
         response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
         total_credits = response.data["total_credits"]
@@ -229,6 +199,7 @@ for rarete, carte in tirages:
         await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
         return
 
+    # Tirer les cartes
     tirages = []
     for _ in range(packs):
         rarete = tirer_rarete()
@@ -241,52 +212,49 @@ for rarete, carte in tirages:
         await ctx.send("❌ Aucune carte n'a été tirée.")
         return
 
+    # Déduire les crédits
     try:
         supabase.table("users").update({"total_credits": total_credits - packs}).eq("user_id", user_id).execute()
     except Exception:
         await ctx.send("❌ Erreur lors de la mise à jour de tes crédits.")
         return
 
+    # Mettre à jour le défi communautaire
     try:
-        supabase.table("defi").update({
-            "tirages": supabase.table("defi").select("tirages").eq("id", "global").execute().data[0]["tirages"] + packs
-        }).eq("id", "global").execute()
+        current = supabase.table("defi").select("tirages").eq("id", "global").execute().data[0]["tirages"]
+        supabase.table("defi").update({"tirages": current + packs}).eq("id", "global").execute()
     except Exception:
         pass
 
+    # Infos de raretés
     rarity_data = {
         "commun": {
-            "emoji": "⚪",
-            "color": 0xB0B0B0,
+            "emoji": "⚪", "color": 0xB0B0B0,
             "phrase": "Une brise légère... la légende commence à peine."
         },
         "rare": {
-            "emoji": "🔵",
-            "color": 0x3498DB,
+            "emoji": "🔵", "color": 0x3498DB,
             "phrase": "Un éclat bleu traverse l’ombre. La chance tourne."
         },
         "epique": {
-            "emoji": "🟣",
-            "color": 0x9B59B6,
+            "emoji": "🟣", "color": 0x9B59B6,
             "phrase": "L’écho d’un pouvoir oublié résonne dans le néant."
         },
         "legendaire": {
-            "emoji": "✨",
-            "color": 0xF1C40F,
+            "emoji": "✨", "color": 0xF1C40F,
             "phrase": "Une relique ancestrale vient de surgir... L’histoire s’écrit."
         },
         "unique": {
-            "emoji": "🧡",
-            "color": 0xE67E22,
+            "emoji": "🧡", "color": 0xE67E22,
             "phrase": "Une entité singulière t’a choisi... Invoquée du fond des âges."
         },
         "collab": {
-            "emoji": "🌟",
-            "color": 0x00FFF7,
+            "emoji": "🌟", "color": 0x00FFF7,
             "phrase": "D’un autre monde... une convergence d’univers s’est produite."
         }
     }
 
+    # Envoi des cartes + enregistrement
     for rarete, carte in tirages:
         data = rarity_data.get(rarete, {})
         embed = discord.Embed(
@@ -294,17 +262,14 @@ for rarete, carte in tirages:
             description=data.get("phrase", ""),
             color=data.get("color", 0xFFFFFF)
         )
-        embed.set_author(name=f"{ctx.author.name}", icon_url=ctx.author.avatar.url)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
         embed.set_footer(text=f"ID: {carte['id']}")
-        if "image" in carte:
-            embed.set_image(url=carte["image"])
-        else:
-            embed.set_image(url="https://example.com/default_image.png")  # à adapter
+        embed.set_image(url=carte.get("image", "https://example.com/default_image.png"))
+
         await ctx.send(embed=embed)
 
-        # 💾 Enregistrement dans Supabase
         try:
-            supabase.table("cartes").insert({
+            await supabase.from_("cartes").insert({
                 "user_id": user_id,
                 "card_id": carte["id"],
                 "nom": carte["nom"],
@@ -313,7 +278,8 @@ for rarete, carte in tirages:
                 "season": carte.get("season", "0")
             }).execute()
         except Exception as e:
-            print(f"Erreur enregistrement carte : {e}")
+            print(f"❌ Erreur insertion carte Supabase : {e}")
+
 @bot.command()
 async def givecredits(ctx):
     owner_id = 617293126494846996  # Ton ID Discord ici
