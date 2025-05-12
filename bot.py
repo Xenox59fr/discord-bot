@@ -325,6 +325,39 @@ async def fetch_cartes_json():
                 return None
             return await resp.json()
 
+class CollectionViewSimple(discord.ui.View):
+    def __init__(self, user_id, cartes):
+        super().__init__(timeout=60)
+        self.user_id = user_id
+        self.page = 0
+        self.embeds = self.generate_embeds(cartes)
+        self.update_buttons()
+
+    def generate_embeds(self, cartes):
+        # Génère les embeds selon les cartes (simplifié ici)
+        return [discord.Embed(title="Ma collection", description="...")]
+
+    def update_buttons(self):
+        self.clear_items()
+        self.add_item(PreviousButton())
+        self.add_item(NextButton())
+
+    async def interaction_check(self, interaction):
+        return interaction.user.id == self.user_id
+
+class PreviousButton(discord.ui.Button):
+    ...
+
+class NextButton(discord.ui.Button):
+    ...
+
+@bot.command()
+async def collection(ctx):
+    ...
+    view = CollectionViewSimple(ctx.author.id, cartes)
+    await ctx.send(embed=view.embeds[view.page], view=view)
+
+
 @bot.command()
 async def collection(ctx):
     user_id = str(ctx.author.id)
