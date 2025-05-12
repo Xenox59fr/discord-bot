@@ -355,23 +355,22 @@ def ajouter_carte_local(user_id, carte):
 
 @bot.command()
 async def inventaire(ctx):
-    user_id = str(ctx.author.id)
-    try:
-        with open("inventaire.json", "r") as f:
-            inventaire = json.load(f)
-    except FileNotFoundError:
-        inventaire = {}
+    result = supabase.table("cartes").select("*").eq("user_id", str(ctx.author.id)).execute()
 
-    cartes = inventaire.get(user_id, [])
-    if not cartes:
-        await ctx.send("📭 Tu n'as encore aucune carte.")
+    if not result.data:
+        await ctx.send("Tu n'as aucune carte.")
         return
 
-    for carte in cartes:
-        print(f"carte brut : {carte} - type : {type(carte)}")
-        embed = discord.Embed(title=carte["nom"], description=f"Rareté : {carte['rarete'].capitalize()}")
+    for carte in result.data:
+        # ✅ Si carte est une chaîne JSON, décommente ceci :
+        # import json
+        # carte = json.loads(carte)
+
+        print(f"DEBUG carte : {carte} | type: {type(carte)}")
+        embed = discord.Embed(title=carte["nom"], description=f"Rareté : {carte['rarity'].capitalize()}")
         embed.set_image(url=carte["image"])
         await ctx.send(embed=embed)
+
 
 
 
