@@ -307,8 +307,6 @@ async def givecredits(ctx):
 
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 
-# <-- LIGNE VIDE ICI
-
 async def fetch_cartes_json():
     url = "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/cartes.json"
     async with aiohttp.ClientSession() as session:
@@ -353,7 +351,6 @@ def ajouter_carte_local(user_id, carte):
 
     with open(fichier, "w") as f:
         json.dump(inventaire, f, indent=2)
-        @bot.command()
 
 @bot.command()
 async def inventaire(ctx):
