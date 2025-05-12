@@ -380,9 +380,9 @@ class CollectionViewSimple(discord.ui.View):
     def create_embed(self, carte):
         # Crée un embed pour chaque carte
         embed = discord.Embed(title=carte['nom'])
-        embed.add_field(name="Description", value=carte['description'])
+        description = carte.get('description', 'Aucune description disponible.')  # Valeur par défaut si la description est manquante
+        embed.add_field(name="Description", value=description)
         return embed
-
 
 # Commande de la collection
 @bot.command()
