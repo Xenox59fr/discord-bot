@@ -315,65 +315,6 @@ async def givecredits(ctx):
 
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 
-
-@bot.command()
-async def buy(ctx):
-    user_id = str(ctx.author.id)
-
-    # Simule un tirage aléatoire (dans le vrai bot tu prendras ça depuis cartes.json)
-    random_id = random.randint(1, 10)  # Supposons 10 cartes max
-    cartes_obtenues.setdefault(user_id, []).append(str(random_id))
-
-    await ctx.send(f"🎴 Tu as obtenu la carte `{random_id}` !")
-class CollectionViewSimple(discord.ui.View):
-    def __init__(self, user_id, cartes):
-        super().__init__(timeout=60)
-        self.user_id = user_id
-        self.cartes = cartes
-        self.page = 0
-        self.embeds = self.make_embeds()
-        self.update_buttons()
-
-    def make_embeds(self):
-        embeds = []
-        for i, c in enumerate(self.cartes):
-            embed = discord.Embed(
-                title=f"{c['nom']} ({c['rarete'].capitalize()})",
-                color=0x2F3136
-            )
-            embed.set_image(url=c["image"])
-            embed.set_footer(text=f"Carte {i+1}/{len(self.cartes)}")
-            embeds.append(embed)
-        return embeds
-
-    def update_buttons(self):
-        self.clear_items()
-        self.add_item(PreviousButton())
-        self.add_item(NextButton())
-
-    async def interaction_check(self, interaction):
-        return interaction.user.id == self.user_id
-
-class PreviousButton(discord.ui.Button):
-    def __init__(self):
-        super().__init__(label="◀️", style=discord.ButtonStyle.secondary)
-
-    async def callback(self, interaction):
-        view: CollectionViewSimple = self.view
-        if view.page > 0:
-            view.page -= 1
-            await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
-
-class NextButton(discord.ui.Button):
-    def __init__(self):
-        super().__init__(label="▶️", style=discord.ButtonStyle.secondary)
-
-    async def callback(self, interaction):
-        view: CollectionViewSimple = self.view
-        if view.page < len(view.embeds) - 1:
-            view.page += 1
-            await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
-
 # <-- LIGNE VIDE ICI
 
 async def fetch_cartes_json():
