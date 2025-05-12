@@ -367,6 +367,7 @@ async def inventaire(ctx):
         return
 
     for carte in cartes:
+        print(f"carte brut : {carte} - type : {type(carte)}")
         embed = discord.Embed(title=carte["nom"], description=f"Rareté : {carte['rarete'].capitalize()}")
         embed.set_image(url=carte["image"])
         await ctx.send(embed=embed)
