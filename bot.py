@@ -283,13 +283,6 @@ async def buy(ctx, packs: int = 1):
             }).execute()
         except Exception as e:
             print(f"Erreur enregistrement carte : {e}")
-
-
-
-
-
-
-
 @bot.command()
 async def givecredits(ctx):
     owner_id = 617293126494846996  # Ton ID Discord ici
@@ -371,6 +364,44 @@ async def collection(ctx):
     # Création de la vue avec les cartes récupérées
     view = CollectionViewSimple(ctx.author.id, cartes)
     await ctx.send(embed=view.embeds[view.page], view=view)
+    class PreviousButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="◀️", style=discord.ButtonStyle.secondary)
+
+    async def callback(self, interaction):
+        view: CollectionViewSimple = self.view
+        if view.page > 0:
+            view.page -= 1
+            await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
+
+class NextButton(discord.ui.Button):
+    def __init__(self):
+        super().__init__(label="▶️", style=discord.ButtonStyle.secondary)
+
+    async def callback(self, interaction):
+        view: CollectionViewSimple = self.view
+        if view.page < len(view.embeds) - 1:
+            view.page += 1
+            await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
+            class CollectionViewSimple(discord.ui.View):
+    def __init__(self, user_id, cartes):
+        super().__init__(timeout=None)
+        self.user_id = user_id
+        self.cartes = cartes
+        self.page = 0
+        self.embeds = [self.create_embed(card) for card in cartes]
+
+        # Ajout des boutons avec des labels
+        self.add_item(PreviousButton())
+        self.add_item(NextButton())
+
+    def create_embed(self, carte):
+        # Ici tu crées un embed pour chaque carte
+        embed = discord.Embed(title=carte['nom'])
+        embed.add_field(name="Description", value=carte['description'])
+        return embed
+
+
 
 
 
