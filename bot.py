@@ -13,6 +13,8 @@ import math
 from discord import Embed
 import aiohttp
 
+def obtenir_description_par_defaut(carte):
+    return f"Nom : {carte['nom']}\nRareté : {carte['rarete'].capitalize()}"
 # Dictionnaire en mémoire : user_id -> liste de card_id
 cartes_obtenues = {}
 last_credit_time = {}
@@ -327,33 +329,8 @@ class CollectionViewSimple(discord.ui.View):
         # Génère les embeds selon les cartes (simplifié ici)
         return [discord.Embed(title="Ma collection", description="...")]
 
-    def update_buttons(self):
-        self.clear_items()
-        self.add_item(PreviousButton())
-        self.add_item(NextButton())
-
-    async def interaction_check(self, interaction):
+       async def interaction_check(self, interaction):
         return interaction.user.id == self.user_id
-
-class PreviousButton(discord.ui.Button):
-    ...
-
-class NextButton(discord.ui.Button):
-    ...
-
-class PreviousButton(discord.ui.Button):
-    def __init__(self):
-        super().__init__(label="◀️", style=discord.ButtonStyle.secondary)
-
-    async def callback(self, interaction):
-        view: CollectionViewSimple = self.view
-        if view.page > 0:
-            view.page -= 1
-            await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
-
-class NextButton(discord.ui.Button):
-    def __init__(self):
-        super().__init__(label="▶️", style=discord.ButtonStyle.secondary)
 
     async def callback(self, interaction):
         view: CollectionViewSimple = self.view
@@ -361,97 +338,45 @@ class NextButton(discord.ui.Button):
             view.page += 1
             await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
 
+def ajouter_carte_local(user_id, carte):
+    fichier = "inventaire.json"
+    if not os.path.exists(fichier):
+        inventaire = {}
+    else:
+        with open(fichier, "r") as f:
+            inventaire = json.load(f)
 
-class CollectionViewSimple(discord.ui.View):
-    def __init__(self, user_id, cartes):
-        super().__init__(timeout=None)
-        self.user_id = user_id
-        self.cartes = cartes
-        self.page = 0
-        self.embeds = [self.create_embed(carte) for carte in cartes]
+    user_id = str(user_id)
+    if user_id not in inventaire:
+        inventaire[user_id] = []
 
-        # Ajout des boutons avec des labels
-        self.add_item(PreviousButton())
-        self.add_item(NextButton())
+    inventaire[user_id].append(carte)
 
-    def create_embed(self, carte):
-        # Crée un embed pour chaque carte
-        embed = discord.Embed(title=carte['nom'])
-        description = carte.get('description', 'Aucune description disponible.')  # Valeur par défaut si la description est manquante
-        embed.add_field(name="Description", value=description)
-        return embed
+    with open(fichier, "w") as f:
+        json.dump(inventaire, f, indent=2)
+        @bot.command()
 
-# Commande de la collection
-@bot.command()
-async def collection(ctx):
+async def inventaire(ctx):
     user_id = str(ctx.author.id)
-    season = "0"  # adapte si nécessaire
-
     try:
-        # Récupérer les cartes de l'utilisateur depuis Supabase
-        result = supabase.table("cartes").select("*").eq("user_id", user_id).eq("season", season).execute()
-        cartes = result.data
-    except Exception as e:
-        await ctx.send("❌ Erreur lors de la récupération de ta collection.")
-        return
+        with open("inventaire.json", "r") as f:
+            inventaire = json.load(f)
+    except FileNotFoundError:
+        inventaire = {}
 
+    cartes = inventaire.get(user_id, [])
     if not cartes:
-        await ctx.send("📭 Aucune carte trouvée pour cette saison.")
+        await ctx.send("📭 Tu n'as encore aucune carte.")
         return
 
-    # Création de la vue avec les cartes récupérées
-    view = CollectionViewSimple(ctx.author.id, cartes)
-    await ctx.send(embed=view.embeds[view.page], view=view)
+    for carte in cartes:
+        embed = discord.Embed(title=carte["nom"], description=f"Rareté : {carte['rarete'].capitalize()}")
+        embed.set_image(url=carte["image"])
+        await ctx.send(embed=embed)
 
-async def ajouter_carte(user_id, carte):
-    # Vérifier si la carte a déjà une description, sinon, ajouter une description par défaut
-    description = carte.get('description', 'Aucune description disponible.')
 
-    # Insérer la carte dans la table Supabase
-    await supabase.from_("cartes").insert({
-        "user_id": user_id,
-        "card_id": carte['id'],
-        "nom": carte['nom'],
-        "image": carte['image'],
-        "rarity": carte['rarity'],
-        "season": carte['season'],
-        "description": description  # Assurez-vous d'ajouter la description ici
-    }).execute()
-    
-def obtenir_description_par_defaut(carte):
-    """Retourne une description par défaut pour la carte si elle n'en a pas."""
-    if 'description' not in carte or carte['description'] == "":
-        return "Aucune description disponible."
-    return carte['description']
 
-# Lors de l'ajout dans Supabase :
-description = obtenir_description_par_defaut(carte)
 
-async def ajouter_carte_suppabase(user_id, carte, rarete):
-    await supabase.from_("cartes").insert({
-        "user_id": user_id,
-        "card_id": carte["id"],
-        "nom": carte["nom"],
-        "image": carte.get("image", "https://example.com/default_image.png"),
-        "rarity": rarete,
-        "season": carte.get("season", "0")
-    }).execute()
-
-@bot.command()
-async def tirer_carte(ctx):
-    # Supposons que la carte soit obtenue après un tirage
-    carte = obtenir_carte_aleatoire()  # Fonction que tu as déjà définie
-
-    # Attribution de la description
-    description = obtenir_description_par_defaut(carte)
-
-    # Ajout de la carte à la base de données
-    await ajouter_carte(ctx.author.id, carte)
-
-    # Création et envoi du message
-    embed = discord.Embed(title=carte['nom'], description=description)
-    embed.set_image(url=carte['image'])
-    await ctx.send(embed=embed)
 
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
 bot.run(TOKEN)
