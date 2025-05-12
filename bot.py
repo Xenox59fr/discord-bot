@@ -355,6 +355,7 @@ def ajouter_carte_local(user_id, carte):
         json.dump(inventaire, f, indent=2)
         @bot.command()
 
+@bot.command()
 async def inventaire(ctx):
     user_id = str(ctx.author.id)
     try:
@@ -372,6 +373,7 @@ async def inventaire(ctx):
         embed = discord.Embed(title=carte["nom"], description=f"Rareté : {carte['rarete'].capitalize()}")
         embed.set_image(url=carte["image"])
         await ctx.send(embed=embed)
+
 
 
 
