@@ -405,7 +405,7 @@ async def collection(ctx):
     )
     
     # Ajouter chaque carte à l'embed
-    for carte in collection_cartes:
+    for carte in collection:
         embed.add_field(
             name=f"{carte['nom']} ({carte['rarity']})", 
             value=f"Description: {carte['description']}\n[Image]({carte['image_url']})", 
