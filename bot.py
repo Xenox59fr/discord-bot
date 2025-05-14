@@ -365,6 +365,14 @@ async def buy(ctx, packs: int = 1):
             carte = random.choice(cartes_possibles)
             tirages.append((rarete, carte))
 
+    # Ajouter la carte à la collection du joueur
+        if user_id not in joueurs_cartes:
+              joueurs_cartes[user_id] = []
+            joueurs_cartes[user_id].append(carte)
+
+    # Sauvegarder les cartes mises à jour
+    sauvegarder_cartes()
+
     if not tirages:
         await ctx.send("❌ Aucune carte n'a été tirée.")
         return
