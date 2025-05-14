@@ -333,7 +333,7 @@ class CollectionViewSimple(discord.ui.View):
         return interaction.user.id == self.user_id
 
     def ajouter_carte_local(user_id, carte):
-    fichier = "inventaire.json"
+        fichier = "inventaire.json"
     if not os.path.exists(fichier):
         inventaire = {}
     else:
