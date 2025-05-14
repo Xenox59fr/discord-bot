@@ -316,17 +316,18 @@ async def fetch_cartes_json():
             if resp.status != 200:
                 return None
             return await resp.json()
-
+            
 class CollectionViewSimple(discord.ui.View):
     def __init__(self, user_id, cartes):
         super().__init__(timeout=60)
 
+        # Défini le fichier ici dans __init__
         fichier = "inventaire.json"
 
-        # Vérifie si le fichier existe, sinon le crée vide
+        # Vérifie si le fichier existe, sinon le crée
         if not os.path.exists(fichier):
             with open(fichier, "w") as f:
-                json.dump({}, f)
+                json.dump({}, f)  # Crée un fichier vide ou avec un dictionnaire par défaut
 
         self.user_id = user_id
         self.page = 0
@@ -334,11 +335,11 @@ class CollectionViewSimple(discord.ui.View):
         self.update_buttons()
 
     def generate_embeds(self, cartes):
-        # Implémente cette méthode selon ton système d'affichage
+        # Implémente cette méthode pour générer les embeds
         return []
 
     def update_buttons(self):
-        # Implémente cette méthode selon ta logique de pagination
+        # Implémente la logique pour les boutons
         pass
 
 
