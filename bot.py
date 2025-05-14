@@ -12,9 +12,31 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 
+# Fichier de sauvegarde pour les cartes des joueurs
+FICHIER_SAUVEGARDE = "cartes_joueurs.json"
 # Stockage en mémoire des cartes obtenues par chaque joueur
 joueurs_cartes = {}
+def charger_cartes():
+    """Charge les cartes des joueurs depuis le fichier JSON"""
+    global joueurs_cartes
+    if os.path.exists(FICHIER_SAUVEGARDE):
+        with open(FICHIER_SAUVEGARDE, "r") as f:
+            joueurs_cartes = json.load(f)
+    else:
+        joueurs_cartes = {}
+def sauvegarder_cartes():
+    """Sauvegarde les cartes des joueurs dans le fichier JSON"""
+    with open(FICHIER_SAUVEGARDE, "w") as f:
+        json.dump(joueurs_cartes, f)
 
+# Charger les cartes au démarrage
+charger_cartes()
+
+# Sauvegarder les cartes quand le bot s'arrête
+@bot.event
+async def on_shutdown():
+    sauvegarder_cartes()
+    
 # Liste des cartes disponibles
 cartes_disponibles = [
     {"id": "archere", "nom": "archere", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/archere.png", "rarete": "commun"},
