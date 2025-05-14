@@ -12,6 +12,46 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 
+from discord.ui import View, Button
+import discord
+
+class SaisonView(View):
+    def __init__(self, user_id):
+        super().__init__(timeout=60)
+        self.user_id = user_id
+
+    @discord.ui.button(label="📅 Saison 0", style=discord.ButtonStyle.primary)
+    async def saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Empêcher les autres utilisateurs d'utiliser le bouton
+        if str(interaction.user.id) != self.user_id:
+            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
+            return
+
+        cartes = joueurs_cartes.get(self.user_id, [])
+        saison_cartes = [c for c in cartes if c.get("saison") == "0"]
+
+        if not saison_cartes:
+            await interaction.response.send_message("📭 Tu n’as encore aucune carte de la Saison 0.")
+            return
+
+        embeds = []
+        for i in range(0, len(saison_cartes), 2):
+            embed = discord.Embed(
+                title=f"✨ Collection Saison 0 de {interaction.user.name} ✨",
+                color=discord.Color.purple()
+            )
+            chunk = saison_cartes[i:i+2]
+            for carte in chunk:
+                nom = carte["nom"]
+                rarete = carte["rarete"]
+                image_url = carte["image"]
+                embed.add_field(name=f"{nom} ({rarete})", value="\u200b", inline=False)
+                embed.set_image(url=image_url)  # Remplacera à chaque carte, donc 1 image visible par embed
+            embeds.append(embed)
+
+        await interaction.response.send_message(embeds=embeds, ephemeral=False)
+
+
 # Fonction pour charger les cartes depuis un fichier JSON
 def load_cards():
     try:
@@ -379,33 +419,18 @@ async def givecredits(ctx):
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 @bot.command()
 async def collection(ctx):
-    """Affiche chaque carte de la collection avec image visible directement."""
+    """Commande pour afficher la collection d'un joueur"""
     user_id = str(ctx.author.id)
 
     if user_id not in joueurs_cartes or not joueurs_cartes[user_id]:
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
 
-    cartes = joueurs_cartes[user_id]
-
-    await ctx.send(f"✨ Voici la sublime collection de **{ctx.author.display_name}** ✨")
-
-    for carte in cartes:
-        nom = carte.get("nom", "Carte inconnue")
-        rarete = carte.get("rarete", "inconnue")
-        description = carte.get("description", "Pas de description disponible.")
-        image_url = carte.get("image", "")
-
-        embed = discord.Embed(
-            title=f"{nom} ({rarete})",
-            description=description,
-            color=discord.Color.purple()
-        )
-
-        if image_url:
-            embed.set_image(url=image_url)
-
-        await ctx.send(embed=embed)
+    view = SaisonView(user_id)
+    await ctx.send(
+        f"Voici la sublime collection de **{ctx.author.name}**. Choisis une saison à afficher 👇",
+        view=view
+    )
 
 
 
