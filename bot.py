@@ -331,12 +331,7 @@ class CollectionViewSimple(discord.ui.View):
     async def interaction_check(self, interaction):
         return interaction.user.id == self.user_id
 
-    async def callback(self, interaction):
-        view: CollectionViewSimple = self.view
-        if view.page < len(view.embeds) - 1:
-            view.page += 1
-            await interaction.response.edit_message(embed=view.embeds[view.page], view=view)
-def ajouter_carte_local(user_id, carte):
+    def ajouter_carte_local(user_id, carte):
     fichier = "inventaire.json"
     if not os.path.exists(fichier):
         inventaire = {}
