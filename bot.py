@@ -12,9 +12,8 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 
-# Créer une instance de bot (ou client, selon ce que tu utilises)
-intents = discord.Intents.default()  # Ajuste selon tes besoins
-bot = discord.Bot(intents=intents)  # Ou discord.Client() si tu utilises un client
+intents = discord.Intents.default()  # Définir les intents
+bot = commands.Bot(command_prefix='!', intents=intents)  # Utiliser commands.Bot
 
 @bot.event
 async def on_ready():
