@@ -315,7 +315,11 @@ async def collection(ctx):
     message = f"📚 Collection de {ctx.author.name} :\n"
 
     for carte in cartes:
-        message += f"• **{car
+        nom = carte.get("nom", "Carte inconnue")
+        rarete = carte.get("rarity", "??")
+        message += f"• **{nom}** ({rarete})\n"
+
+    await ctx.send(message)
 
 
 
