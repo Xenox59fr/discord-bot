@@ -17,12 +17,32 @@ joueurs_cartes = {}
 
 # Liste des cartes disponibles
 cartes_disponibles = [
-    {"nom": "Goule", "rarity": "commun", "image": "https://exemple.com/goule.png"},
-    {"nom": "Dragon", "rarity": "épique", "image": "https://exemple.com/dragon.png"},
-    {"nom": "Fée", "rarity": "rare", "image": "https://exemple.com/fee.png"},
-    {"nom": "Troll", "rarity": "légendaire", "image": "https://exemple.com/troll.png"},
-    # Ajoute toutes tes autres cartes ici...
+    {"id": "archere", "nom": "archere", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/archere.png", "rarete": "commun"},
+    {"id": "skaarlphase1", "nom": "skaarlphase1", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarlphase1.png", "rarete": "rare"},
+    {"id": "arion", "nom": "arion", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/arion.png", "rarete": "legendaire"},
+    {"id": "biboo", "nom": "biboo", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/biboo.png", "rarete": "epique"},
+    {"id": "eloran", "nom": "eloran", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/eloran.png", "rarete": "unique"},
+    {"id": "jason", "nom": "jason", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/jason.png", "rarete": "collab"},
+    {"id": "espion", "nom": "espion", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/espion.png", "rarete": "commun"},
+    {"id": "fairos", "nom": "fairos", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/fairos.png", "rarete": "commun"},
+    {"id": "garde", "nom": "garde", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/garde.png", "rarete": "commun"},
+    {"id": "golem", "nom": "golem", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/golem.png", "rarete": "commun"},
+    {"id": "gorzak", "nom": "gorzak", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/gorzak.png", "rarete": "rare"},
+    {"id": "grizork", "nom": "grizork", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/grizork.png", "rarete": "epique"},
+    {"id": "guerrier", "nom": "guerrier", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/guerrier.png", "rarete": "commun"},
+    {"id": "herboriste", "nom": "herboriste", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/herboriste.png", "rarete": "commun"},
+    {"id": "krivak", "nom": "krivak", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/krivak.png", "rarete": "commun"},
+    {"id": "mage", "nom": "mage", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/mage.png", "rarete": "commun"},
+    {"id": "loupdelaforet", "nom": "loupdelaforet", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/loupdelaforet.png", "rarete": "commun"},
+    {"id": "nyra", "nom": "nyra", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/nyra.png", "rarete": "commun"},
+    {"id": "nyxilith", "nom": "nyxilith", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/nyxilith.png", "rarete": "rare"},
+    {"id": "skaarl", "nom": "skaarl", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarl.png", "rarete": "commun"},
+    {"id": "skaarlphase2", "nom": "skaarlphase2", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarlphase2.png", "rarete": "epique"},
+    {"id": "skaarlphase3", "nom": "skaarlphase3", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarlphase3.png", "rarete": "legendaire"},
+    {"id": "sylgron", "nom": "sylgron", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/sylgron.png", "rarete": "commun"},
+    {"id": "zorath", "nom": "zorath", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/zorath.png", "rarete": "rare"}
 ]
+
 
 
 
