@@ -335,21 +335,20 @@ async def givecredits(ctx):
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 @bot.command()
 async def collection(ctx):
+    """Commande pour afficher la collection d'un joueur"""
     user_id = str(ctx.author.id)
     
-    # Vérifier si le joueur a des cartes dans sa collection
     if user_id not in joueurs_cartes or not joueurs_cartes[user_id]:
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
-
-    # Afficher les cartes de l'utilisateur
+    
     cartes = joueurs_cartes[user_id]
     message = f"📚 Collection de {ctx.author.name} :\n"
-
+    
     for carte in cartes:
-        nom = carte.get("nom", "Carte inconnue")
-        rarete = carte.get("rarity", "??")
-        image = carte.get("image", "")
+        nom = carte["nom"]
+        rarete = carte["rarete"]
+        image = carte["image"]
         message += f"• **{nom}** ({rarete}) - [Image]({image})\n"
     
     await ctx.send(message)
