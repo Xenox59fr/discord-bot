@@ -334,11 +334,11 @@ class CollectionViewSimple(discord.ui.View):
         self.update_buttons()
 
     def generate_embeds(self, cartes):
-        # à adapter selon ton système d'embeds
+        # Implémente cette méthode selon ton système d'affichage
         return []
 
     def update_buttons(self):
-        # idem, à adapter à ton système de boutons
+        # Implémente cette méthode selon ta logique de pagination
         pass
 
 
