@@ -15,6 +15,16 @@ from discord import Embed
 # Stockage en mémoire des cartes obtenues par chaque joueur
 joueurs_cartes = {}
 
+# Liste des cartes disponibles
+cartes_disponibles = [
+    {"nom": "Goule", "rarity": "commun", "image": "https://exemple.com/goule.png"},
+    {"nom": "Dragon", "rarity": "épique", "image": "https://exemple.com/dragon.png"},
+    {"nom": "Fée", "rarity": "rare", "image": "https://exemple.com/fee.png"},
+    {"nom": "Troll", "rarity": "légendaire", "image": "https://exemple.com/troll.png"},
+    # Ajoute toutes tes autres cartes ici...
+]
+
+
 
 def obtenir_description_par_defaut(carte):
     return f"Nom : {carte['nom']}\nRareté : {carte['rarete'].capitalize()}"
