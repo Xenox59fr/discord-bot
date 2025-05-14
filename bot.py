@@ -131,10 +131,6 @@ cartes_disponibles = [
     {"id": "zorath", "nom": "zorath", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/zorath.png", "rarete": "rare"}
 ]
 
-
-intents = discord.Intents.default()  # Définir les intents
-bot = commands.Bot(command_prefix='!', intents=intents)  # Utiliser commands.Bot
-
 @bot.event
 async def on_ready():
     print(f'Bot connecté en tant que {bot.user}')
@@ -366,9 +362,10 @@ async def buy(ctx, packs: int = 1):
             tirages.append((rarete, carte))
 
     # Ajouter la carte à la collection du joueur
-        if user_id not in joueurs_cartes:
-              joueurs_cartes[user_id] = []
-            joueurs_cartes[user_id].append(carte)
+   if user_id not in joueurs_cartes:
+    joueurs_cartes[user_id] = []
+    joueurs_cartes[user_id].append(carte)
+
 
     # Sauvegarder les cartes mises à jour
     sauvegarder_cartes()
