@@ -337,18 +337,21 @@ async def givecredits(ctx):
 async def collection(ctx):
     user_id = str(ctx.author.id)
     
+    # Vérifier si le joueur a des cartes dans sa collection
     if user_id not in joueurs_cartes or not joueurs_cartes[user_id]:
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
 
+    # Afficher les cartes de l'utilisateur
     cartes = joueurs_cartes[user_id]
     message = f"📚 Collection de {ctx.author.name} :\n"
 
     for carte in cartes:
         nom = carte.get("nom", "Carte inconnue")
         rarete = carte.get("rarity", "??")
-        message += f"• **{nom}** ({rarete})\n"
-
+        image = carte.get("image", "")
+        message += f"• **{nom}** ({rarete}) - [Image]({image})\n"
+    
     await ctx.send(message)
 
 
