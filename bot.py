@@ -12,6 +12,7 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 
+
 intents = discord.Intents.default()  # Définir les intents
 bot = commands.Bot(command_prefix='!', intents=intents)  # Utiliser commands.Bot
 
@@ -381,6 +382,24 @@ async def collection(ctx):
         message += f"• **{nom}** ({rarete}) - [Image]({image})\n"
     
     await ctx.send(message)
+
+# Créer l'embed
+    embed = discord.Embed(
+        title="Votre Collection de Cartes",
+        description="Voici les cartes que vous avez collectées jusqu'à présent.",
+        color=discord.Color.blue()
+    )
+    
+    # Ajouter chaque carte à l'embed
+    for carte in collection_cartes:
+        embed.add_field(
+            name=f"{carte['nom']} ({carte['rarity']})", 
+            value=f"Description: {carte['description']}\n[Image]({carte['image_url']})", 
+            inline=False
+        )
+
+    # Envoyer l'embed dans le chat
+    await ctx.send(embed=embed)
 
 
 
