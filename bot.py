@@ -269,8 +269,6 @@ async def buy(ctx, packs: int = 1):
 
         await ctx.send(embed=embed)
 
-        try:
-
 @bot.command()
 async def givecredits(ctx):
     owner_id = 617293126494846996  # Ton ID Discord ici
