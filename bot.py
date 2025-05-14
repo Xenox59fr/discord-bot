@@ -12,6 +12,10 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 
+# Stockage en mémoire des cartes obtenues par chaque joueur
+joueurs_cartes = {}
+
+
 def obtenir_description_par_defaut(carte):
     return f"Nom : {carte['nom']}\nRareté : {carte['rarete'].capitalize()}"
 # Dictionnaire en mémoire : user_id -> liste de card_id
@@ -268,6 +272,12 @@ async def buy(ctx, packs: int = 1):
         embed.set_image(url=carte.get("image", "https://example.com/default_image.png"))
 
         await ctx.send(embed=embed)
+                # Sauvegarde la carte pour le joueur
+        user_id = str(ctx.author.id)
+        if user_id not in joueurs_cartes:
+            joueurs_cartes[user_id] = []
+        joueurs_cartes[user_id].append(carte)
+
 
 @bot.command()
 async def givecredits(ctx):
@@ -293,6 +303,19 @@ async def givecredits(ctx):
     }).eq('user_id', user_id).execute()
 
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
+@bot.command()
+async def collection(ctx):
+    user_id = str(ctx.author.id)
+    
+    if user_id not in joueurs_cartes or not joueurs_cartes[user_id]:
+        await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
+        return
+
+    cartes = joueurs_cartes[user_id]
+    message = f"📚 Collection de {ctx.author.name} :\n"
+
+    for carte in cartes:
+        message += f"• **{car
 
 
 
