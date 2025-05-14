@@ -382,6 +382,7 @@ async def collection(ctx):
     """Commande pour afficher la collection d'un joueur"""
     user_id = str(ctx.author.id)
     
+    # Vérifier si l'utilisateur a des cartes dans sa collection
     if user_id not in joueurs_cartes or not joueurs_cartes[user_id]:
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
@@ -389,32 +390,29 @@ async def collection(ctx):
     cartes = joueurs_cartes[user_id]
     message = f"📚 Collection de {ctx.author.name} :\n"
     
-    for carte in cartes:
-        nom = carte["nom"]
-        rarete = carte["rarete"]
-        image = carte["image"]
-        message += f"• **{nom}** ({rarete}) - [Image]({image})\n"
-    
-    await ctx.send(message)
-
-# Créer l'embed
+    # Créer l'embed
     embed = discord.Embed(
-        title="Votre Collection de Cartes",
-        description="Voici les cartes que vous avez collectées jusqu'à présent.",
+        title=f"Collection de {ctx.author.name}",
+        description="Voici les cartes que tu as collectées jusqu'à présent.",
         color=discord.Color.blue()
     )
     
     # Ajouter chaque carte à l'embed
-    for carte in collection:
+    for carte in cartes:
+        nom = carte["nom"]
+        rarete = carte["rarete"]
+        description = carte.get("description", "Pas de description disponible.")
+        image_url = carte["image"]  # Supposons que l'URL de l'image soit dans 'image'
+        
+        # Ajouter une nouvelle ligne à l'embed pour chaque carte
         embed.add_field(
-            name=f"{carte['nom']} ({carte['rarity']})", 
-            value=f"Description: {carte['description']}\n[Image]({carte['image_url']})", 
+            name=f"{nom} ({rarete})", 
+            value=f"Description: {description}\n[Image]({image_url})", 
             inline=False
         )
-
+    
     # Envoyer l'embed dans le chat
     await ctx.send(embed=embed)
-
 
 
 
