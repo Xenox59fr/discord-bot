@@ -13,7 +13,8 @@ import math
 from discord import Embed
 import aiohttp
 
-carte = json.loads(carte)
+
+
 def obtenir_description_par_defaut(carte):
     return f"Nom : {carte['nom']}\nRareté : {carte['rarete'].capitalize()}"
 # Dictionnaire en mémoire : user_id -> liste de card_id
