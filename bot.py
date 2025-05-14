@@ -11,9 +11,6 @@ import json
 from discord.ui import Button, View
 import math
 from discord import Embed
-import aiohttp
-
-
 
 def obtenir_description_par_defaut(carte):
     return f"Nom : {carte['nom']}\nRareté : {carte['rarete'].capitalize()}"
@@ -273,16 +270,6 @@ async def buy(ctx, packs: int = 1):
         await ctx.send(embed=embed)
 
         try:
-            await supabase.from_("cartes").insert({
-                "user_id": user_id,
-                "card_id": carte["id"],
-                "nom": carte["nom"],
-                "image": carte.get("image", "https://example.com/default_image.png"),
-                "rarity": rarete,
-                "season": carte.get("season", "0")
-            }).execute()
-        except Exception as e:
-            print(f"❌ Erreur insertion carte Supabase : {e}")
 
 @bot.command()
 async def givecredits(ctx):
@@ -308,82 +295,6 @@ async def givecredits(ctx):
     }).eq('user_id', user_id).execute()
 
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
-
-async def fetch_cartes_json():
-    url = "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/cartes.json"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            if resp.status != 200:
-                return None
-            return await resp.json()
-            
-class CollectionViewSimple(discord.ui.View):
-    def __init__(self, user_id, cartes):
-        super().__init__(timeout=60)
-
-        # Défini le fichier ici dans __init__
-        fichier = "inventaire.json"
-
-        # Vérifie si le fichier existe, sinon le crée
-        if not os.path.exists(fichier):
-            with open(fichier, "w") as f:
-                json.dump({}, f)  # Crée un fichier vide ou avec un dictionnaire par défaut
-
-        self.user_id = user_id
-        self.page = 0
-        self.embeds = self.generate_embeds(cartes)
-        self.update_buttons()
-
-    def generate_embeds(self, cartes):
-        # Implémente cette méthode pour générer les embeds
-        return []
-
-    def update_buttons(self):
-        # Implémente la logique pour les boutons
-        pass
-
-
-    def generate_embeds(self, cartes):
-        # Génère les embeds selon les cartes (simplifié ici)
-        return [discord.Embed(title="Ma collection", description="...")]
-
-    async def interaction_check(self, interaction):
-        return interaction.user.id == self.user_id
-
-    def ajouter_carte_local(user_id, carte):
-        fichier = "inventaire.json"
-    if not os.path.exists(fichier):
-        inventaire = {}
-    else:
-        with open(fichier, "r") as f:
-            inventaire = json.load(f)
-
-    user_id = str(user_id)
-    if user_id not in inventaire:
-        inventaire[user_id] = []
-
-    inventaire[user_id].append(carte)
-
-    with open(fichier, "w") as f:
-        json.dump(inventaire, f, indent=2)
-
-@bot.command()
-async def inventaire(ctx):
-    result = supabase.table("cartes").select("*").eq("user_id", str(ctx.author.id)).execute()
-
-    if not result.data:
-        await ctx.send("Tu n'as aucune carte.")
-        return
-
-    for carte in result.data:
-        # ✅ Si carte est une chaîne JSON, décommente ceci :
-        # import json
-        # carte = json.loads(carte)
-
-        print(f"DEBUG carte : {carte} | type: {type(carte)}")
-        embed = discord.Embed(title=carte["nom"], description=f"Rareté : {carte['rarity'].capitalize()}")
-        embed.set_image(url=carte["image"])
-        await ctx.send(embed=embed)
 
 
 
