@@ -12,6 +12,14 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 
+# Créer une instance de bot (ou client, selon ce que tu utilises)
+intents = discord.Intents.default()  # Ajuste selon tes besoins
+bot = discord.Bot(intents=intents)  # Ou discord.Client() si tu utilises un client
+
+@bot.event
+async def on_ready():
+    print(f'Bot connecté en tant que {bot.user}')
+
 # Fichier de sauvegarde pour les cartes des joueurs
 FICHIER_SAUVEGARDE = "cartes_joueurs.json"
 # Stockage en mémoire des cartes obtenues par chaque joueur
