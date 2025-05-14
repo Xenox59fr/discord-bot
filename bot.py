@@ -52,13 +52,13 @@ class SaisonView(View):
         await interaction.response.send_message(embeds=embeds, ephemeral=False)
 
 
-# Fonction pour charger les cartes depuis un fichier JSON
 def load_cards():
     try:
         with open('cartes_joueurs.json', 'r') as f:
             return json.load(f)
-    except FileNotFoundError:
-        return {}  # Retourne un dictionnaire vide si le fichier n'existe pas encore
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}  # Retourne un dictionnaire vide si le fichier est inexistant ou mal formé
+
 
 # Fonction pour sauvegarder les cartes dans un fichier JSON
 def save_cards(cards):
