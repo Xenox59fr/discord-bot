@@ -321,11 +321,16 @@ class CollectionViewSimple(discord.ui.View):
     def __init__(self, user_id, cartes):
         super().__init__(timeout=60)
         fichier = "inventaire.json"
-    if not os.path.exists(fichier):
+
+        if not os.path.exists(fichier):
+            with open(fichier, "w") as f:
+                json.dump({}, f)  # Création vide ou par défaut
+
         self.user_id = user_id
         self.page = 0
         self.embeds = self.generate_embeds(cartes)
         self.update_buttons()
+
 
     def generate_embeds(self, cartes):
         # Génère les embeds selon les cartes (simplifié ici)
