@@ -379,7 +379,7 @@ async def givecredits(ctx):
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 @bot.command()
 async def collection(ctx):
-    """Affiche la collection d'un joueur avec un embed stylé."""
+    """Affiche chaque carte de la collection avec image visible directement."""
     user_id = str(ctx.author.id)
 
     if user_id not in joueurs_cartes or not joueurs_cartes[user_id]:
@@ -388,13 +388,7 @@ async def collection(ctx):
 
     cartes = joueurs_cartes[user_id]
 
-    # Créer l'embed principal
-    embed = discord.Embed(
-        title=f"✨ Voici la sublime collection de {ctx.author.display_name} ✨",
-        description="Chaque carte est une pièce précieuse de ton grimoire 🃏",
-        color=discord.Color.purple()
-    )
-    embed.set_thumbnail(url=ctx.author.avatar.url if ctx.author.avatar else discord.Embed.Empty)
+    await ctx.send(f"✨ Voici la sublime collection de **{ctx.author.display_name}** ✨")
 
     for carte in cartes:
         nom = carte.get("nom", "Carte inconnue")
@@ -402,17 +396,17 @@ async def collection(ctx):
         description = carte.get("description", "Pas de description disponible.")
         image_url = carte.get("image", "")
 
-        valeur = f"**Rareté** : {rarete}\n**Description** : {description}"
-        if image_url:
-            valeur += f"\n[Voir l'image]({image_url})"
-
-        embed.add_field(
-            name=nom,
-            value=valeur,
-            inline=False
+        embed = discord.Embed(
+            title=f"{nom} ({rarete})",
+            description=description,
+            color=discord.Color.purple()
         )
 
-    await ctx.send(embed=embed)
+        if image_url:
+            embed.set_image(url=image_url)
+
+        await ctx.send(embed=embed)
+
 
 
 
