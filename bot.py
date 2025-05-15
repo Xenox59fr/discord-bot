@@ -377,8 +377,8 @@ async def buy(ctx, packs: int = 1):
 
     # Ajouter la carte à la collection du joueur
    if user_id not in joueurs_cartes:
-    joueurs_cartes[user_id] = []
-    joueurs_cartes[user_id].append(carte)
+      joueurs_cartes[user_id] = []
+      joueurs_cartes[user_id].append(carte)
 
 
     # Sauvegarder les cartes mises à jour
