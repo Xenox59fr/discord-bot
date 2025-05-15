@@ -493,42 +493,13 @@ async def collection(ctx):
         return
 
     cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
-
-class CollectionView(ui.View):
-   def __init__(self, user_cartes):
-        super().__init__(timeout=None)
-        self.user_cartes = user_cartes
-
-class CollectionView(ui.View):
-    def __init__(self, user_cartes):
-        super().__init__(timeout=None)
-        self.user_cartes = user_cartes
-
-    @ui.button(label="Saison 0", style=ButtonStyle.primary, custom_id="btn_saison0")
-    async def saison0_button(self, interaction: discord.Interaction, button: ui.Button):
-        saison0_cartes = [c for c in self.user_cartes if c["season"] == "0"]
-        view = Saison0View(saison0_cartes)
-        embed = discord.Embed(
-            title="Collection Saison 0",
-            description="Clique sur un bouton rareté pour filtrer"
-        )
-        await interaction.response.edit_message(embed=embed, view=view)
-
-
-    @ui.button(label="Saison 0", style=ButtonStyle.primary, custom_id="btn_saison0")
-    async def saison0_button(self, interaction, button):
-        # Affiche les boutons par rareté pour la saison 0
-        saison0_cartes = [c for c in self.user_cartes if c["season"] == "0"]
-        view = Saison0View(saison0_cartes)
-        embed = Embed(title="Collection Saison 0", description="Clique sur un bouton rareté pour filtrer")
-        await interaction.response.edit_message(embed=embed, view=view)
-    view = SaisonView(user_id)
+    view = CollectionView(cartes, user_id)
     await ctx.send(
-        f"Voici la sublime collection de **{ctx.author.name}**. Choisis une saison à afficher 👇",
+        f"Voici la sublime collection de **{ctx.author.name}**. Utilise les boutons pour naviguer 📖",
         view=view
     )
 
-class CollectionView(View):
+class CollectionView(ui.View):
     def __init__(self, cartes, user_id):
         super().__init__(timeout=60)
         self.cartes = cartes
@@ -541,9 +512,9 @@ class CollectionView(View):
     def update_buttons(self):
         self.clear_items()
         if self.page > 0:
-            self.add_item(Button(label="◀️ Précédent", style=discord.ButtonStyle.secondary, custom_id="prev"))
+            self.add_item(ui.Button(label="◀️ Précédent", style=discord.ButtonStyle.secondary, custom_id="prev"))
         if self.page < self.max_pages - 1:
-            self.add_item(Button(label="Suivant ▶️", style=discord.ButtonStyle.secondary, custom_id="next"))
+            self.add_item(ui.Button(label="Suivant ▶️", style=discord.ButtonStyle.secondary, custom_id="next"))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if str(interaction.user.id) != self.user_id:
@@ -551,15 +522,15 @@ class CollectionView(View):
             return False
         return True
 
-    @discord.ui.button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @ui.button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
+    async def previous(self, interaction: discord.Interaction, button: ui.Button):
         if self.page > 0:
             self.page -= 1
             self.update_buttons()
             await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
-    @discord.ui.button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @ui.button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
+    async def next(self, interaction: discord.Interaction, button: ui.Button):
         if self.page < self.max_pages - 1:
             self.page += 1
             self.update_buttons()
