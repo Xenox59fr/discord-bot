@@ -499,8 +499,21 @@ class CollectionView(ui.View):
         super().__init__(timeout=None)
         self.user_cartes = user_cartes
 
-        # Bouton Saison 0
-        self.add_item(ui.Button(label="Saison 0", style=ButtonStyle.primary, custom_id="btn_saison0"))
+class CollectionView(ui.View):
+    def __init__(self, user_cartes):
+        super().__init__(timeout=None)
+        self.user_cartes = user_cartes
+
+    @ui.button(label="Saison 0", style=ButtonStyle.primary, custom_id="btn_saison0")
+    async def saison0_button(self, interaction: discord.Interaction, button: ui.Button):
+        saison0_cartes = [c for c in self.user_cartes if c["season"] == "0"]
+        view = Saison0View(saison0_cartes)
+        embed = discord.Embed(
+            title="Collection Saison 0",
+            description="Clique sur un bouton rareté pour filtrer"
+        )
+        await interaction.response.edit_message(embed=embed, view=view)
+
 
     @ui.button(label="Saison 0", style=ButtonStyle.primary, custom_id="btn_saison0")
     async def saison0_button(self, interaction, button):
