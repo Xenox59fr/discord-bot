@@ -506,11 +506,7 @@ class CollectionView(View):
         self.cartes = cartes
         self.user_id = user_id
         self.page = 0
-        self.max_pages = max(1, math.ceil(len(cartes) / 2))
-
-        # Ajout des boutons une fois
-        self.add_item(Button(label="◀️ Précédent", style=discord.ButtonStyle.secondary, custom_id="prev"))
-        self.add_item(Button(label="Suivant ▶️", style=discord.ButtonStyle.secondary, custom_id="next"))
+        self.max_pages = max(1, math.ceil(len(cartes) / 2))  # 2 cartes par page
 
     def get_embed(self):
         embed = discord.Embed(
@@ -521,22 +517,22 @@ class CollectionView(View):
         for carte in cartes_a_afficher:
             embed.add_field(name=f"{carte['nom']} ({carte['rarete']})", value="\u200b", inline=False)
         if cartes_a_afficher:
-            embed.set_image(url=cartes_a_afficher[0]["image"])
+            embed.set_image(url=cartes_a_afficher[0]["image"])  # Une image par page
         return embed
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return str(interaction.user.id) == self.user_id
+        if str(interaction.user.id) != self.user_id:
+            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
+            return False
+        return True
 
-    async def on_error(self, error, item, interaction):
-        await interaction.response.send_message("❌ Une erreur est survenue.", ephemeral=True)
-
-    @discord.ui.button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
+    @button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.page > 0:
             self.page -= 1
             await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
-    @discord.ui.button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
+    @button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.page < self.max_pages - 1:
             self.page += 1
