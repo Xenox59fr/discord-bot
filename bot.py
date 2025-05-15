@@ -495,7 +495,7 @@ async def collection(ctx):
     cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
 
  class CollectionView(ui.View):
-     def __init__(self, user_cartes):
+    def __init__(self, user_cartes):
         super().__init__(timeout=None)
         self.user_cartes = user_cartes
 
