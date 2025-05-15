@@ -481,61 +481,67 @@ async def collection(ctx):
     """Commande pour afficher la collection d'un joueur"""
     user_id = str(ctx.author.id)
 
-    # Charger les cartes depuis cartes_joueurs.json
     try:
         with open("cartes_joueurs.json", "r") as f:
             cartes_joueurs = json.load(f)
     except FileNotFoundError:
         cartes_joueurs = {}
 
-    # Vérifie si l'utilisateur a des cartes
     if user_id not in cartes_joueurs or not cartes_joueurs[user_id]:
         await ctx.send("Tu n'as aucune carte dans ta collection.")
         return
 
-    cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
+    cartes = cartes_joueurs[user_id]
     view = CollectionView(cartes, user_id)
+    embed = view.get_embed()
     await ctx.send(
         f"Voici la sublime collection de **{ctx.author.name}**. Utilise les boutons pour naviguer 📖",
+        embed=embed,
         view=view
     )
 
-class CollectionView(ui.View):
+class CollectionView(View):
     def __init__(self, cartes, user_id):
         super().__init__(timeout=60)
         self.cartes = cartes
         self.user_id = user_id
         self.page = 0
-        self.max_pages = max(1, math.ceil(len(cartes) / 2))  # 2 cartes par page
+        self.max_pages = max(1, math.ceil(len(cartes) / 2))
 
-        self.update_buttons()
+        # Ajout des boutons une fois
+        self.add_item(Button(label="◀️ Précédent", style=discord.ButtonStyle.secondary, custom_id="prev"))
+        self.add_item(Button(label="Suivant ▶️", style=discord.ButtonStyle.secondary, custom_id="next"))
 
-    def update_buttons(self):
-        self.clear_items()
-        if self.page > 0:
-            self.add_item(ui.Button(label="◀️ Précédent", style=discord.ButtonStyle.secondary, custom_id="prev"))
-        if self.page < self.max_pages - 1:
-            self.add_item(ui.Button(label="Suivant ▶️", style=discord.ButtonStyle.secondary, custom_id="next"))
+    def get_embed(self):
+        embed = discord.Embed(
+            title=f"📜 Collection de cartes (page {self.page + 1}/{self.max_pages})",
+            color=discord.Color.gold()
+        )
+        cartes_a_afficher = self.cartes[self.page * 2:(self.page + 1) * 2]
+        for carte in cartes_a_afficher:
+            embed.add_field(name=f"{carte['nom']} ({carte['rarete']})", value="\u200b", inline=False)
+        if cartes_a_afficher:
+            embed.set_image(url=cartes_a_afficher[0]["image"])
+        return embed
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if str(interaction.user.id) != self.user_id:
-            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
-            return False
-        return True
+        return str(interaction.user.id) == self.user_id
 
-    @ui.button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
-    async def previous(self, interaction: discord.Interaction, button: ui.Button):
+    async def on_error(self, error, item, interaction):
+        await interaction.response.send_message("❌ Une erreur est survenue.", ephemeral=True)
+
+    @discord.ui.button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.page > 0:
             self.page -= 1
-            self.update_buttons()
             await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
-    @ui.button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
-    async def next(self, interaction: discord.Interaction, button: ui.Button):
+    @discord.ui.button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.page < self.max_pages - 1:
             self.page += 1
-            self.update_buttons()
             await interaction.response.edit_message(embed=self.get_embed(), view=self)
+
 
     def get_embed(self):
         embed = discord.Embed(
