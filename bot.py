@@ -480,8 +480,16 @@ async def collection(ctx):
     """Commande pour afficher la collection d'un joueur"""
     user_id = str(ctx.author.id)
 
-    if user_id not in joueurs_cartes or not joueurs_cartes[user_id]:
-        await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
+    # Charger les cartes depuis cartes_joueurs.json
+    try:
+        with open("cartes_joueurs.json", "r") as f:
+            cartes_joueurs = json.load(f)
+    except FileNotFoundError:
+        cartes_joueurs = {}
+
+    # Vérifie si l'utilisateur a des cartes
+    if user_id not in cartes_joueurs or not cartes_joueurs[user_id]:
+        await ctx.send("Tu n'as aucune carte dans ta collection.")
         return
 
     cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
