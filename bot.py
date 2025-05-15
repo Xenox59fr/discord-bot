@@ -12,8 +12,15 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 
-from discord.ui import View, Button
-import discord
+joueurs_cartes = {}
+
+def charger_cartes():
+    global joueurs_cartes
+    if os.path.exists("cartes_joueurs.json") and os.path.getsize("cartes_joueurs.json") > 0:
+        with open("cartes_joueurs.json", "r") as f:
+            joueurs_cartes = json.load(f)
+    else:
+        joueurs_cartes = {}
 
 class SaisonView(View):
     def __init__(self, user_id):
