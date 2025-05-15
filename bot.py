@@ -490,6 +490,55 @@ async def collection(ctx):
         view=view
     )
 
+class CollectionView(View):
+    def __init__(self, cartes, user_id):
+        super().__init__(timeout=60)
+        self.cartes = cartes
+        self.user_id = user_id
+        self.page = 0
+        self.max_pages = max(1, math.ceil(len(cartes) / 2))  # 2 cartes par page
+
+        self.update_buttons()
+
+    def update_buttons(self):
+        self.clear_items()
+        if self.page > 0:
+            self.add_item(Button(label="◀️ Précédent", style=discord.ButtonStyle.secondary, custom_id="prev"))
+        if self.page < self.max_pages - 1:
+            self.add_item(Button(label="Suivant ▶️", style=discord.ButtonStyle.secondary, custom_id="next"))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if str(interaction.user.id) != self.user_id:
+            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.page > 0:
+            self.page -= 1
+            self.update_buttons()
+            await interaction.response.edit_message(embed=self.get_embed(), view=self)
+
+    @discord.ui.button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.page < self.max_pages - 1:
+            self.page += 1
+            self.update_buttons()
+            await interaction.response.edit_message(embed=self.get_embed(), view=self)
+
+    def get_embed(self):
+        embed = discord.Embed(
+            title=f"📜 Collection de cartes (page {self.page + 1}/{self.max_pages})",
+            color=discord.Color.gold()
+        )
+        cartes_a_afficher = self.cartes[self.page * 2:(self.page + 1) * 2]
+        for carte in cartes_a_afficher:
+            embed.add_field(name=f"{carte['nom']} ({carte['rarete']})", value="\u200b", inline=False)
+        if cartes_a_afficher:
+            embed.set_image(url=cartes_a_afficher[0]["image"])  # 1 image par page
+        return embed
+
 
 
 
