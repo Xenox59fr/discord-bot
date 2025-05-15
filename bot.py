@@ -484,7 +484,7 @@ async def collection(ctx):
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
 
-     cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
+    cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
 
     view = CollectionView(cartes, user_id)
     await ctx.send(f"Voici ta collection, {ctx.author.display_name} :", view=view)
