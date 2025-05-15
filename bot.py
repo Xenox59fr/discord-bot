@@ -347,7 +347,6 @@ async def buy(ctx, packs: int = 1):
 
     user_id = str(ctx.author.id)
 
-
     # Récupérer les crédits
     try:
         response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
@@ -369,31 +368,26 @@ async def buy(ctx, packs: int = 1):
             carte = random.choice(cartes_possibles)
             tirages.append((rarete, carte))
 
-  # ✅ Ajout dans la collection
-    if user_id not in joueurs_cartes:
-        joueurs_cartes[user_id] = []
-
-    joueurs_cartes[user_id].append({
-        "id": carte_tiree["id"],
-        "nom": carte_tiree["nom"],
-        "image": carte_tiree["image"],
-        "rarete": carte_tiree["rarete"],
-        "saison": "0"
-    })
-    sauvegarder_cartes()
-
-    # Ajouter la carte à la collection du joueur
-    if user_id not in joueurs_cartes:
-        joueurs_cartes[user_id] = []
-    joueurs_cartes[user_id].append(carte)
-
-
-    # Sauvegarder les cartes mises à jour
-    sauvegarder_cartes()
-
     if not tirages:
         await ctx.send("❌ Aucune carte n'a été tirée.")
         return
+
+    # Initialiser la collection si besoin
+    if user_id not in joueurs_cartes:
+        joueurs_cartes[user_id] = []
+
+    # Ajouter toutes les cartes tirées à la collection du joueur
+    for rarete, carte in tirages:
+        joueurs_cartes[user_id].append({
+            "id": carte["id"],
+            "nom": carte["nom"],
+            "image": carte.get("image", ""),
+            "rarete": carte["rarete"],
+            "saison": "0"
+        })
+
+    # Sauvegarder la collection
+    sauvegarder_cartes()
 
     # Déduire les crédits
     try:
@@ -437,7 +431,7 @@ async def buy(ctx, packs: int = 1):
         }
     }
 
-    # Envoi des cartes + enregistrement
+    # Envoi des cartes tirées en embed
     for rarete, carte in tirages:
         data = rarity_data.get(rarete, {})
         embed = discord.Embed(
