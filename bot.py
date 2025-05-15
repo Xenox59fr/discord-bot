@@ -340,16 +340,6 @@ async def buy(ctx, packs: int = 1):
 
     user_id = str(ctx.author.id)
 
-    joueurs_cartes[user_id] = []
-
-joueurs_cartes[user_id].append({
-    "id": carte_tiree["id"],
-    "nom": carte_tiree["nom"],
-    "image": carte_tiree["image"],
-    "rarete": carte_tiree["rarete"],
-    "saison": "0"
-})
-sauvegarder_cartes()
 
     # Récupérer les crédits
     try:
@@ -371,6 +361,19 @@ sauvegarder_cartes()
         if cartes_possibles:
             carte = random.choice(cartes_possibles)
             tirages.append((rarete, carte))
+
+  # ✅ Ajout dans la collection
+    if user_id not in joueurs_cartes:
+        joueurs_cartes[user_id] = []
+
+    joueurs_cartes[user_id].append({
+        "id": carte_tiree["id"],
+        "nom": carte_tiree["nom"],
+        "image": carte_tiree["image"],
+        "rarete": carte_tiree["rarete"],
+        "saison": "0"
+    })
+    sauvegarder_cartes()
 
     # Ajouter la carte à la collection du joueur
    if user_id not in joueurs_cartes:
