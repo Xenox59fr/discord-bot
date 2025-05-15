@@ -495,7 +495,7 @@ async def collection(ctx):
     cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
 
     view = CollectionView(cartes, user_id)
-    await ctx.send(f"Voici ta collection, {ctx.author.display_name} :", view=view)
+    await ctx.author.send(f"Voici ta collection, {ctx.author.display_name} :", view=view)
 
     view = SaisonView(user_id)
     await ctx.send(
