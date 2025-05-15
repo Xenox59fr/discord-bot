@@ -484,6 +484,9 @@ async def collection(ctx):
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
 
+    view = CollectionView(cartes, user_id)
+    await ctx.send(embed=view.get_embed(), view=view)
+
     view = SaisonView(user_id)
     await ctx.send(
         f"Voici la sublime collection de **{ctx.author.name}**. Choisis une saison à afficher 👇",
