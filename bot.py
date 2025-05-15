@@ -12,6 +12,8 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 from discord import ui
+from discord.ui import View, Button, button
+
 
 joueurs_cartes = {}
 
