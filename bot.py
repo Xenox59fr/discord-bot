@@ -494,9 +494,21 @@ async def collection(ctx):
 
     cartes = cartes_joueurs[user_id]  # Liste des cartes de l'utilisateur
 
-    view = CollectionView(cartes, user_id)
-    await ctx.author.send(f"Voici ta collection, {ctx.author.display_name} :", view=view)
+    class CollectionView(ui.View):
+    def __init__(self, user_cartes):
+        super().__init__(timeout=None)
+        self.user_cartes = user_cartes
 
+        # Bouton Saison 0
+        self.add_item(ui.Button(label="Saison 0", style=ButtonStyle.primary, custom_id="btn_saison0"))
+
+    @ui.button(label="Saison 0", style=ButtonStyle.primary, custom_id="btn_saison0")
+    async def saison0_button(self, interaction, button):
+        # Affiche les boutons par rareté pour la saison 0
+        saison0_cartes = [c for c in self.user_cartes if c["season"] == "0"]
+        view = Saison0View(saison0_cartes)
+        embed = Embed(title="Collection Saison 0", description="Clique sur un bouton rareté pour filtrer")
+        await interaction.response.edit_message(embed=embed, view=view)
     view = SaisonView(user_id)
     await ctx.send(
         f"Voici la sublime collection de **{ctx.author.name}**. Choisis une saison à afficher 👇",
@@ -551,6 +563,7 @@ class CollectionView(View):
         if cartes_a_afficher:
             embed.set_image(url=cartes_a_afficher[0]["image"])  # 1 image par page
         return embed
+        
 
 
 
