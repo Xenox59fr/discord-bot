@@ -494,13 +494,11 @@ async def collection(ctx):
         return
 
     cartes = cartes_joueurs[user_id]
-    view = CollectionView(cartes, user_id)
-    embed = view.get_embed()
-    await ctx.send(
-        f"Voici la sublime collection de **{ctx.author.name}**. Utilise les boutons pour naviguer 📖",
-        embed=embed,
+    view = Saison0View(cartes, user_id)
+    await ctx.send(f"Voici la sublime collection de **{ctx.author.name}**.\nClique sur le bouton pour afficher tes cartes de la Saison 0 📖",
         view=view
     )
+
 
 class Saison0View(View):
     def __init__(self, all_cartes, user_id):
