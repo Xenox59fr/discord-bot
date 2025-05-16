@@ -502,31 +502,52 @@ async def collection(ctx):
         view=view
     )
 
-class CollectionView(View):
-    def __init__(self, cartes, user_id):
+class Saison0View(View):
+    def __init__(self, all_cartes, user_id):
         super().__init__(timeout=60)
-        self.cartes = cartes
+        self.all_cartes = all_cartes
         self.user_id = user_id
-        self.page = 0
-        self.max_pages = max(1, math.ceil(len(cartes) / 2))  # 2 cartes par page
-
-    def get_embed(self):
-        embed = discord.Embed(
-            title=f"📜 Collection de cartes (page {self.page + 1}/{self.max_pages})",
-            color=discord.Color.gold()
-        )
-        cartes_a_afficher = self.cartes[self.page * 2:(self.page + 1) * 2]
-        for carte in cartes_a_afficher:
-            embed.add_field(name=f"{carte['nom']} ({carte['rarete']})", value="\u200b", inline=False)
-        if cartes_a_afficher:
-            embed.set_image(url=cartes_a_afficher[0]["image"])  # Une image par page
-        return embed
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if str(interaction.user.id) != self.user_id:
             await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
             return False
         return True
+
+    @button(label="Saison 0", style=discord.ButtonStyle.primary)
+    async def show_saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
+        saison0_cartes = [c for c in self.all_cartes if c.get("season") == "0"]
+        if not saison0_cartes:
+            await interaction.response.send_message("❌ Aucune carte pour la Saison 0.", ephemeral=True)
+            return
+
+        # Remplacer la vue par celle avec pagination
+        new_view = CollectionView(saison0_cartes, self.user_id)
+        embed = new_view.get_embed()
+        await interaction.response.edit_message(embed=embed, view=new_view)
+
+class CollectionView(View):
+    def __init__(self, cartes, user_id):
+        super().__init__(timeout=120)
+        self.cartes = cartes
+        self.user_id = user_id
+        self.page = 0
+        self.max_pages = max(1, math.ceil(len(cartes) / 2))
+
+    def get_embed(self):
+        embed = discord.Embed(
+            title=f"📜 Saison 0 — page {self.page + 1}/{self.max_pages}",
+            color=discord.Color.gold()
+        )
+        cartes_a_afficher = self.cartes[self.page * 2:(self.page + 1) * 2]
+        for carte in cartes_a_afficher:
+            embed.add_field(name=f"{carte['nom']} ({carte['rarete']})", value="\u200b", inline=False)
+        if cartes_a_afficher:
+            embed.set_image(url=cartes_a_afficher[0]["image"])
+        return embed
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return str(interaction.user.id) == self.user_id
 
     @button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -539,19 +560,6 @@ class CollectionView(View):
         if self.page < self.max_pages - 1:
             self.page += 1
             await interaction.response.edit_message(embed=self.get_embed(), view=self)
-
-
-    def get_embed(self):
-        embed = discord.Embed(
-            title=f"📜 Collection de cartes (page {self.page + 1}/{self.max_pages})",
-            color=discord.Color.gold()
-        )
-        cartes_a_afficher = self.cartes[self.page * 2:(self.page + 1) * 2]
-        for carte in cartes_a_afficher:
-            embed.add_field(name=f"{carte['nom']} ({carte['rarete']})", value="\u200b", inline=False)
-        if cartes_a_afficher:
-            embed.set_image(url=cartes_a_afficher[0]["image"])  # 1 image par page
-        return embed
         
 
 
