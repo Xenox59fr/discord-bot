@@ -388,6 +388,30 @@ async def buy(ctx, packs: int = 1):
             "rarete": carte["rarete"],
             "saison": "0"
         })
+         # Charger les cartes disponibles
+    with open("cartes.json", "r") as f:
+        all_cards = json.load(f)
+
+    # Tirage aléatoire
+    nouvelle_carte = random.choice(all_cards)
+
+    # Charger ou créer cartes_joueurs
+    try:
+        with open("cartes_joueurs.json", "r") as f:
+            cartes_joueurs = json.load(f)
+    except FileNotFoundError:
+        cartes_joueurs = {}
+
+    if user_id not in cartes_joueurs:
+        cartes_joueurs[user_id] = []
+
+    cartes_joueurs[user_id].append(nouvelle_carte)
+
+    # Sauvegarder dans le fichier
+    with open("cartes_joueurs.json", "w") as f:
+        json.dump(cartes_joueurs, f, indent=2)
+
+    await ctx.send(f"🎉 Tu as obtenu **{nouvelle_carte['nom']}** !")
 
     # Sauvegarder la collection
     sauvegarder_cartes()
