@@ -498,6 +498,10 @@ async def collection(ctx):
     await ctx.send(f"Voici la sublime collection de **{ctx.author.name}**.\nClique sur le bouton pour afficher tes cartes de la Saison 0 📖",
         view=view
     )
+   print("Cartes du joueur :", cartes)
+   for carte in cartes:
+    print(f"{carte['id']} — season: {carte.get('season')}")
+
 
 
 class Saison0View(View):
