@@ -5,166 +5,166 @@
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/archere.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "skaarlphase1",
     "nom": "skaarlphase1",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarlphase1.png",
     "rarete": "rare",
     "season": "0"
-  }
+  },
   {
     "id": "arion",
     "nom": "arion",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/arion.png",
     "rarete": "legendaire",
     "season": "0"
-  }
+  },
   {
     "id": "biboo",
     "nom": "biboo",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/biboo.png",
     "rarete": "epique",
     "season": "0"
-  }
+  },
   {
     "id": "eloran",
     "nom": "eloran",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/eloran.png",
     "rarete": "unique",
     "season": "0"
-  }
+  },
   {
     "id": "jason",
     "nom": "jason",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/jason.png",
     "rarete": "collab",
     "season": "0"
-  }
+  },
   {
     "id": "espion",
     "nom": "espion",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/espion.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "fairos",
     "nom": "fairos",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/fairos.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "garde",
     "nom": "garde",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/garde.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "golem",
     "nom": "golem",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/golem.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "gorzak",
     "nom": "gorzak",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/gorzak.png",
     "rarete": "rare",
     "season": "0"
-  }
+  },
   {
     "id": "grizork",
     "nom": "grizork",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/grizork.png",
     "rarete": "epique",
     "season": "0"
-  }
+  },
   {
     "id": "guerrier",
     "nom": "guerrier",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/guerrier.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "herboriste",
     "nom": "herboriste",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/herboriste.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "krivak",
     "nom": "krivak",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/krivak.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "mage",
     "nom": "mage",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/mage.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "loupdelaforet",
     "nom": "loupdelaforet",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/loupdelaforet.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "nyra",
     "nom": "nyra",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/nyra.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "nyxilith",
     "nom": "nyxilith",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/nyxilith.png",
     "rarete": "rare",
     "season": "0"
-  }
+  },
   {
     "id": "skaarl",
     "nom": "skaarl",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarl.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "skaarlphase2",
     "nom": "skaarlphase2",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarlphase2.png",
     "rarete": "epique",
     "season": "0"
-  }
+  },
   {
     "id": "skaarlphase3",
     "nom": "skaarlphase3",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skaarlphase3.png",
     "rarete": "legendaire",
     "season": "0"
-  }
+  },
   {
     "id": "sylgron",
     "nom": "sylgron",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/sylgron.png",
     "rarete": "commun",
     "season": "0"
-  }
+  },
   {
     "id": "zorath",
     "nom": "zorath",
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/zorath.png",
     "rarete": "rare",
     "season": "0"
-  }
+  },
 ]
