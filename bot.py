@@ -13,7 +13,6 @@ import math
 from discord import Embed
 from discord import ui
 from discord.ui import View, Button, button
-from discord import ButtonStyle
 
 
 
