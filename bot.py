@@ -526,7 +526,7 @@ async def collection(ctx):
     )
    print("Cartes du joueur :", cartes)
    for carte in cartes:
-    print(f"{carte['id']} — season: {carte.get('season')}")
+       print(f"{carte['id']} — season: {carte.get('season')}")
 
 
 
