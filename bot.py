@@ -512,90 +512,74 @@ async def givecredits(ctx):
     await ctx.send(f"✅ Tu as reçu {montant} crédits pour les tests. Nouveau solde : {solde_actuel + montant} crédits.")
 @bot.command()
 async def collection(ctx):
-    """Commande pour afficher la collection d'un joueur"""
     user_id = str(ctx.author.id)
+    cartes = joueurs_cartes.get(user_id, [])
 
-    try:
-        with open("cartes_joueurs.json", "r") as f:
-            cartes_joueurs = json.load(f)
-    except FileNotFoundError:
-        cartes_joueurs = {}
-
-    if user_id not in cartes_joueurs or not cartes_joueurs[user_id]:
-        await ctx.send("Tu n'as aucune carte dans ta collection.")
+    if not cartes:
+        await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
 
-    cartes = cartes_joueurs[user_id]
-    view = Saison0View(cartes, user_id)
-    await ctx.send(
-        f"Voici la sublime collection de **{ctx.author.name}**.\nClique sur le bouton pour afficher tes cartes de la Saison 0 📖",
-        view=view
-    )
-
-    print("Cartes du joueur :", cartes)
-    for carte in cartes:
-        print(f"{carte['id']} — season: {carte.get('season')}")
+    view = SaisonView(user_id)
+    await ctx.send("Voici tes collections disponibles :", view=view)
 
 
 
-class Saison0View(View):
-    def __init__(self, all_cartes, user_id):
+
+class SaisonView(View):
+    def __init__(self, user_id):
         super().__init__(timeout=60)
-        self.all_cartes = all_cartes
         self.user_id = user_id
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    @discord.ui.button(label="📅 Saison 0", style=discord.ButtonStyle.primary)
+    async def saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
         if str(interaction.user.id) != self.user_id:
             await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
-            return False
-        return True
-
-    @button(label="Saison 0", style=discord.ButtonStyle.primary)
-    async def show_saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
-        saison0_cartes = [c for c in self.all_cartes if c.get("saison") == "0"]
-        if not saison0_cartes:
-            await interaction.response.send_message("❌ Aucune carte pour la Saison 0.", ephemeral=True)
             return
 
-        # Remplacer la vue par celle avec pagination
-        new_view = CollectionView(saison0_cartes, self.user_id)
-        embed = new_view.get_embed()
-        await interaction.response.edit_message(embed=embed, view=new_view)
+        cartes = joueurs_cartes.get(self.user_id, [])
+        saison_cartes = [c for c in cartes if c.get("saison") == "0"]
+
+        if not saison_cartes:
+            await interaction.response.send_message("📭 Tu n’as encore aucune carte de la Saison 0.")
+            return
+
+        view = CollectionView(self.user_id, saison_cartes)
+        embed = view.get_embed()
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
 
 class CollectionView(View):
-    def __init__(self, cartes, user_id):
+    def __init__(self, user_id, cartes):
         super().__init__(timeout=120)
-        self.cartes = cartes
         self.user_id = user_id
-        self.page = 0
-        self.max_pages = max(1, math.ceil(len(cartes) / 2))
+        self.cartes = cartes
+        self.index = 0  # carte affichée
 
     def get_embed(self):
-        embed = discord.Embed(
-            title=f"📜 Saison 0 — page {self.page + 1}/{self.max_pages}",
-            color=discord.Color.gold()
+        carte = self.cartes[self.index]
+        embed = Embed(
+            title=f"Carte {self.index + 1}/{len(self.cartes)} : {carte['nom']} ({carte['rarete'].capitalize()})",
+            color=RARITY_SETTINGS.get(carte['rarete'], {}).get('color', 0xFFFFFF)
         )
-        cartes_a_afficher = self.cartes[self.page * 2:(self.page + 1) * 2]
-        for carte in cartes_a_afficher:
-            embed.add_field(name=f"{carte['nom']} ({carte['rarete']})", value="\u200b", inline=False)
-        if cartes_a_afficher:
-            embed.set_image(url=cartes_a_afficher[0]["image"])
+        embed.set_image(url=carte['image'])
+        embed.set_footer(text=f"Utilise les boutons pour naviguer dans ta collection.")
         return embed
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return str(interaction.user.id) == self.user_id
+    @discord.ui.button(label="⬅️ Précédent", style=ButtonStyle.secondary)
+    async def precedent(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if str(interaction.user.id) != self.user_id:
+            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
+            return
+        self.index = (self.index - 1) % len(self.cartes)
+        await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
-    @button(label="◀️", style=discord.ButtonStyle.secondary, row=0)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.page > 0:
-            self.page -= 1
-            await interaction.response.edit_message(embed=self.get_embed(), view=self)
-
-    @button(label="▶️", style=discord.ButtonStyle.secondary, row=0)
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.page < self.max_pages - 1:
-            self.page += 1
-            await interaction.response.edit_message(embed=self.get_embed(), view=self)
+    @discord.ui.button(label="Suivant ➡️", style=ButtonStyle.secondary)
+    async def suivant(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if str(interaction.user.id) != self.user_id:
+            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
+            return
+        self.index = (self.index + 1) % len(self.cartes)
+        await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
 bot.run(TOKEN)
