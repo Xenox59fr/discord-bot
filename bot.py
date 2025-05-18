@@ -169,11 +169,6 @@ charger_cartes()
 @bot.event
 async def on_shutdown():
     sauvegarder_cartes()
-    
-
-
-
-
 def obtenir_description_par_defaut(carte):
     return f"Nom : {carte['nom']}\nRareté : {carte['rarete'].capitalize()}"
 # Dictionnaire en mémoire : user_id -> liste de card_id
@@ -341,6 +336,55 @@ def tirer_rarete():
             return rarete
     return "commun"
 
+# Classe de pagination des cartes tirées
+class CardPaginator(View):
+    def __init__(self, ctx, tirages):
+        super().__init__(timeout=120)
+        self.ctx = ctx
+        self.tirages = tirages
+        self.index = 0
+
+    async def interaction_check(self, interaction):
+        return interaction.user == self.ctx.author
+
+    @button(label="⬅️ Précédent", style=ButtonStyle.primary)
+    async def prev(self, interaction, button):
+        if self.index > 0:
+            self.index -= 1
+            await interaction.response.edit_message(embed=self.make_embed(), view=self)
+        else:
+            await interaction.response.defer()
+
+    @button(label="Suivant ➡️", style=ButtonStyle.primary)
+    async def next(self, interaction, button):
+        if self.index < len(self.tirages) - 1:
+            self.index += 1
+            await interaction.response.edit_message(embed=self.make_embed(), view=self)
+        else:
+            await interaction.response.defer()
+
+    def make_embed(self):
+        rarete, carte = self.tirages[self.index]
+        rarity_data = {
+            "commun": {"emoji": "⚪", "color": 0xB0B0B0, "phrase": "Une brise légère... la légende commence à peine."},
+            "rare": {"emoji": "🔵", "color": 0x3498DB, "phrase": "Un éclat bleu traverse l’ombre. La chance tourne."},
+            "epique": {"emoji": "🟣", "color": 0x9B59B6, "phrase": "L’écho d’un pouvoir oublié résonne dans le néant."},
+            "legendaire": {"emoji": "✨", "color": 0xF1C40F, "phrase": "Une relique ancestrale vient de surgir... L’histoire s’écrit."},
+            "unique": {"emoji": "🧡", "color": 0xE67E22, "phrase": "Une entité singulière t’a choisi... Invoquée du fond des âges."},
+            "collab": {"emoji": "🌟", "color": 0x00FFF7, "phrase": "D’un autre monde... une convergence d’univers s’est produite."}
+        }
+        data = rarity_data.get(rarete, {})
+        embed = Embed(
+            title=f"{data.get('emoji', '')} {carte['nom']} ({rarete.upper()})",
+            description=data.get("phrase", ""),
+            color=data.get("color", 0x3498DB)
+        )
+        if carte.get("image"):
+            embed.set_image(url=carte["image"])
+        embed.set_footer(text=f"Carte {self.index + 1} sur {len(self.tirages)}")
+        return embed
+
+# Commande buy avec pagination
 @bot.command()
 async def buy(ctx, packs: int = 1):
     if packs < 1 or packs > 10:
@@ -369,16 +413,15 @@ async def buy(ctx, packs: int = 1):
         await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
         return
 
-    # Fonction pour tirer une rareté aléatoire (tu dois avoir ta propre fonction tirer_rarete)
+    # Fonction pour tirer une rareté aléatoire
     def tirer_rarete():
-        # Exemple basique, adapte ta propre logique
         chances = {
             "commun": 50,
             "rare": 25,
             "epique": 15,
             "legendaire": 7,
             "unique": 2,
-            "collab": 1  # Met à jour selon ta logique
+            "collab": 1
         }
         choix = random.choices(list(chances.keys()), weights=chances.values(), k=1)
         return choix[0]
@@ -413,7 +456,7 @@ async def buy(ctx, packs: int = 1):
             "nom": carte["nom"],
             "image": carte.get("image", ""),
             "rarete": carte["rarete"],
-            "season": "0"   # ici il faut "season", pas "saison"
+            "season": "0"
         })
 
     with open("cartes_joueurs.json", "w") as f:
@@ -433,51 +476,10 @@ async def buy(ctx, packs: int = 1):
     except Exception:
         pass
 
-    # Texte pour chaque rareté
-    rarity_data = {
-        "commun": {
-            "emoji": "⚪", "color": 0xB0B0B0,
-            "phrase": "Une brise légère... la légende commence à peine."
-        },
-        "rare": {
-            "emoji": "🔵", "color": 0x3498DB,
-            "phrase": "Un éclat bleu traverse l’ombre. La chance tourne."
-        },
-        "epique": {
-            "emoji": "🟣", "color": 0x9B59B6,
-            "phrase": "L’écho d’un pouvoir oublié résonne dans le néant."
-        },
-        "legendaire": {
-            "emoji": "✨", "color": 0xF1C40F,
-            "phrase": "Une relique ancestrale vient de surgir... L’histoire s’écrit."
-        },
-        "unique": {
-            "emoji": "🧡", "color": 0xE67E22,
-            "phrase": "Une entité singulière t’a choisi... Invoquée du fond des âges."
-        },
-        "collab": {
-            "emoji": "🌟", "color": 0x00FFF7,
-            "phrase": "D’un autre monde... une convergence d’univers s’est produite."
-        }
-    }
-
-    embed = discord.Embed(
-        title=f"🎁 Tu as acheté {packs} pack(s) !",
-        description="Voici tes cartes tirées :",
-        color=0x3498DB
-    )
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
-
-    for rarete, carte in tirages:
-        data = rarity_data.get(rarete, {})
-        emoji = data.get("emoji", "")
-        phrase = data.get("phrase", "")
-        embed.add_field(name=f"{emoji} {carte['nom']} ({rarete.upper()})", value=phrase, inline=False)
-
-    if tirages:
-        embed.set_image(url=tirages[0][1].get("image", ""))
-
-    await ctx.send(embed=embed)
+    # Envoyer la pagination
+    paginator = CardPaginator(ctx, tirages)
+    embed = paginator.make_embed()
+    await ctx.send(embed=embed, view=paginator)
 
 
 
@@ -591,14 +593,6 @@ class CollectionView(View):
         if self.page < self.max_pages - 1:
             self.page += 1
             await interaction.response.edit_message(embed=self.get_embed(), view=self)
-        
-
-
-
-
-
-
-
 
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
 bot.run(TOKEN)
