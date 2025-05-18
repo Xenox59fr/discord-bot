@@ -658,6 +658,37 @@ async def leaderboard(ctx):
     except Exception as e:
         print(e)
         await ctx.send("❌ Une erreur est survenue lors de la récupération du classement.")
+        
+        @bot.command()
+@commands.has_permissions(manage_guild=True)
+async def addcredits(ctx, member: discord.Member, amount: int):
+    if amount <= 0:
+        await ctx.send("❌ Le montant doit être supérieur à 0.")
+        return
+
+    user_id = str(member.id)
+
+    try:
+        response = supabase.table("users").select("solde").eq("user_id", user_id).single().execute()
+        data = response.data
+
+        if data:
+            solde = data["solde"] + amount
+            supabase.table("users").update({
+                "solde": solde
+            }).eq("user_id", user_id).execute()
+        else:
+            supabase.table("users").insert({
+                "user_id": user_id,
+                "solde": amount,
+                "total_credits": 0
+            }).execute()
+
+        await ctx.send(f"✅ {member.mention} a reçu **{amount} crédits** (don).")
+    except Exception as e:
+        print(e)
+        await ctx.send("❌ Erreur lors de l'attribution des crédits.")
+
 
 
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
