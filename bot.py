@@ -387,7 +387,6 @@ class CardPaginator(View):
         embed.set_footer(text=f"Carte {self.index + 1} sur {len(self.tirages)}")
         return embed
 
-# Commande buy avec pagination
 @bot.command()
 async def buy(ctx, packs: int = 1):
     if packs < 1 or packs > 10:
@@ -396,7 +395,6 @@ async def buy(ctx, packs: int = 1):
 
     user_id = str(ctx.author.id)
 
-    # Charger les cartes disponibles
     try:
         with open("cartes.json", "r") as f:
             all_cards = json.load(f)
@@ -404,7 +402,6 @@ async def buy(ctx, packs: int = 1):
         await ctx.send("❌ Erreur : fichier de cartes introuvable.")
         return
 
-    # Vérifier crédits
     try:
         response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
         total_credits = response.data["total_credits"]
@@ -416,7 +413,6 @@ async def buy(ctx, packs: int = 1):
         await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
         return
 
-    # Fonction pour tirer une rareté aléatoire
     def tirer_rarete():
         chances = {
             "commun": 50,
@@ -426,10 +422,8 @@ async def buy(ctx, packs: int = 1):
             "unique": 2,
             "collab": 1
         }
-        choix = random.choices(list(chances.keys()), weights=chances.values(), k=1)
-        return choix[0]
+        return random.choices(list(chances.keys()), weights=chances.values(), k=1)[0]
 
-    # Tirer les cartes
     tirages = []
     for _ in range(packs):
         rarete = tirer_rarete()
@@ -442,7 +436,7 @@ async def buy(ctx, packs: int = 1):
         await ctx.send("❌ Aucune carte n'a été tirée.")
         return
 
-    # Charger ou créer cartes_joueurs.json
+    # Enregistrement JSON local
     try:
         with open("cartes_joueurs.json", "r") as f:
             cartes_joueurs = json.load(f)
@@ -452,8 +446,9 @@ async def buy(ctx, packs: int = 1):
     if user_id not in cartes_joueurs:
         cartes_joueurs[user_id] = []
 
-    # Ajouter les cartes au fichier
+    to_insert = []
     for _, carte in tirages:
+        # Ajout JSON local
         cartes_joueurs[user_id].append({
             "id": carte["id"],
             "nom": carte["nom"],
@@ -461,28 +456,41 @@ async def buy(ctx, packs: int = 1):
             "rarete": carte["rarete"],
             "season": "0"
         })
+        # Ajout Supabase
+        to_insert.append({
+            "user_id": user_id,
+            "card_id": carte["id"],
+            "nom": carte["nom"],
+            "image": carte.get("image", ""),
+            "rarete": carte["rarete"],
+            "season": "0"
+        })
+
+    try:
+        supabase.table("cartes").insert(to_insert).execute()
+    except Exception:
+        await ctx.send("❌ Erreur lors de l'enregistrement des cartes dans Supabase.")
+        return
 
     with open("cartes_joueurs.json", "w") as f:
         json.dump(cartes_joueurs, f, indent=2)
 
-    # Déduire les crédits
     try:
         supabase.table("users").update({"total_credits": total_credits - packs}).eq("user_id", user_id).execute()
     except Exception:
         await ctx.send("❌ Erreur lors de la mise à jour de tes crédits.")
         return
 
-    # Mettre à jour le défi communautaire
     try:
         current = supabase.table("defi").select("tirages").eq("id", "global").execute().data[0]["tirages"]
         supabase.table("defi").update({"tirages": current + packs}).eq("id", "global").execute()
     except Exception:
         pass
 
-    # Envoyer la pagination
     paginator = CardPaginator(ctx, tirages)
     embed = paginator.make_embed()
     await ctx.send(embed=embed, view=paginator)
+
 
 
 
