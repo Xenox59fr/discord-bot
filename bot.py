@@ -670,23 +670,28 @@ async def addcredits(ctx, membre: discord.Member, montant: int):
 
     try:
         # Vérifie si l'utilisateur existe déjà
-        response = supabase.table("users").select("*").eq("user_id", user_id).single().execute()
-        if response.data:
-            solde_actuel = response.data["solde"]
-            new_solde = solde_actuel + montant
-            supabase.table("users").update({"solde": new_solde}).eq("user_id", user_id).execute()
+        response = supabase.table("users").select("solde").eq("user_id", user_id).single().execute()
+        user_data = response.data
+
+        if user_data:
+            # Mise à jour du solde seulement (PAS total_credits)
+            nouveau_solde = user_data["solde"] + montant
+            supabase.table("users").update({"solde": nouveau_solde}).eq("user_id", user_id).execute()
         else:
-            # Si l'utilisateur n'existe pas encore, on le crée
+            # Si l'utilisateur n'existe pas, on l'insère avec le solde uniquement
             supabase.table("users").insert({
                 "user_id": user_id,
                 "solde": montant,
-                "total_credits": 0  # ou montant si tu veux que ça compte aussi
+                "total_credits": 0,
+                "last_daily": None
             }).execute()
 
-        await ctx.send(f"✅ {montant} crédits ont été ajoutés à {membre.mention}.")
+        await ctx.send(f"✅ {montant} crédits ont été ajoutés à {membre.mention} (hors classement).")
+
     except Exception as e:
-        print(e)
+        print("Erreur Supabase :", e)
         await ctx.send("❌ Une erreur est survenue lors de l'ajout des crédits.")
+
 
 
 
