@@ -659,7 +659,7 @@ async def leaderboard(ctx):
         print(e)
         await ctx.send("❌ Une erreur est survenue lors de la récupération du classement.")
         
-        @bot.command()
+@bot.command()
 @commands.has_permissions(manage_guild=True)
 async def addcredits(ctx, member: discord.Member, amount: int):
     if amount <= 0:
