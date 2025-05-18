@@ -469,18 +469,23 @@ async def buy(ctx, packs: int = 1):
         }
     }
 
-    # Affichage des cartes tirées
-    for rarete, carte in tirages:
-        data = rarity_data.get(rarete, {})
-        embed = discord.Embed(
-            title=f"{data.get('emoji', '')} {carte['nom']} ({rarete.upper()})",
-            description=data.get("phrase", ""),
-            color=data.get("color", 0xFFFFFF)
-        )
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
-        embed.set_footer(text=f"ID: {carte['id']}")
-        embed.set_image(url=carte.get("image", "https://github.com/Xenox59fr/discord-bot/tree/main/SAISON_0"))
-        await ctx.send(embed=embed)
+embed = discord.Embed(
+    title=f"🎁 Tu as acheté {packs} pack(s) !",
+    description="Voici tes cartes tirées :",
+    color=0x3498DB
+)
+embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+
+for rarete, carte in tirages:
+    data = rarity_data.get(rarete, {})
+    emoji = data.get("emoji", "")
+    phrase = data.get("phrase", "")
+    embed.add_field(name=f"{emoji} {carte['nom']} ({rarete.upper()})", value=phrase, inline=False)
+
+if tirages:
+    embed.set_image(url=tirages[0][1].get("image", ""))
+
+await ctx.send(embed=embed)
 
 
 
