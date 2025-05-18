@@ -628,5 +628,38 @@ class CollectionView(View):
         self.index = (self.index + 1) % len(self.cartes)
         await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
+@bot.command(name="leaderboard")
+async def leaderboard(ctx):
+    try:
+        # Récupérer les 10 meilleurs utilisateurs selon les crédits totaux
+        response = supabase.table("users").select("user_id, total_credits").order("total_credits", desc=True).limit(10).execute()
+        top_users = response.data
+
+        if not top_users:
+            await ctx.send("📭 Aucun utilisateur trouvé dans le classement.")
+            return
+
+        embed = discord.Embed(
+            title="🏆 Classement des plus riches (total cumulé)",
+            description="Les utilisateurs avec le plus de crédits gagnés durant toute la saison.",
+            color=discord.Color.gold()
+        )
+
+        for i, user in enumerate(top_users, start=1):
+            user_obj = await bot.fetch_user(int(user['user_id']))
+            pseudo = user_obj.name if user_obj else f"Utilisateur inconnu ({user['user_id']})"
+            embed.add_field(
+                name=f"{i}. {pseudo}",
+                value=f"💰 {user['total_credits']} crédits cumulés",
+                inline=False
+            )
+
+        await ctx.send(embed=embed)
+
+    except Exception as e:
+        print(e)
+        await ctx.send("❌ Une erreur est survenue lors de la récupération du classement.")
+
+
 print(f"TOKEN: {TOKEN}")  # A supprimer ensuite, évidemment
 bot.run(TOKEN)
