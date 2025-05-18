@@ -546,10 +546,7 @@ class SaisonView(View):
 
     @discord.ui.button(label="📅 Saison 0", style=discord.ButtonStyle.primary)
     async def saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if str(interaction.user.id) != self.user_id:
-            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
-            return
-
+       
         saison_cartes = [c for c in self.cartes if c.get("season") == "0"]
 
         if not saison_cartes:
@@ -580,9 +577,7 @@ class CollectionView(View):
 
     @discord.ui.button(label="⬅️ Précédent", style=ButtonStyle.secondary)
     async def precedent(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if str(interaction.user.id) != self.user_id:
-            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
-            return
+        
         self.index = (self.index - 1) % len(self.cartes)
         await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
