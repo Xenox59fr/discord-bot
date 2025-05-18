@@ -368,6 +368,17 @@ def ajouter_carte_a_joueur(user_id, carte):
 
     with open("cartes_joueurs.json", "w") as f:
         json.dump(data, f, indent=4)
+        
+ carte_achetee = {
+    "id": carte["id"],
+    "nom": carte["nom"],
+    "image": carte.get("image", ""),
+    "rarete": carte["rarete"],
+    "season": "0"
+}
+
+ajouter_carte_a_joueur(str(ctx.author.id), carte_achetee)
+
 
     # Charger les cartes disponibles DÈS LE DÉBUT
     try:
