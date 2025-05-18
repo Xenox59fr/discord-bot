@@ -580,21 +580,21 @@ class CollectionView(View):
         self.cartes = cartes
         self.index = 0  # carte affichée
 
-    def get_embed(self):
-    carte = self.cartes[self.index]
-    quantite = carte.get("quantite", 1)
+    def get_embed(self):  # ligne 583
+        carte = self.cartes[self.index]
+        quantite = carte.get("quantite", 1)
 
-    titre = f"Carte {self.index + 1}/{len(self.cartes)} : {carte['nom']} ({carte['rarete'].capitalize()})"
-    if quantite > 1:
-        titre = f"{titre}  •  x{quantite}"
+        titre = f"Carte {self.index + 1}/{len(self.cartes)} : {carte['nom']} ({carte['rarete'].capitalize()})"
+        if quantite > 1:
+            titre = f"{titre}  •  x{quantite}"
 
-    embed = Embed(
-        title=titre,
-        color=RARITY_SETTINGS.get(carte['rarete'], {}).get('color', 0xFFFFFF)
-    )
-    embed.set_image(url=carte['image'])
-    embed.set_footer(text="Utilise les boutons pour naviguer dans la collection.")
-    return embed
+        embed = Embed(
+            title=titre,
+            color=RARITY_SETTINGS.get(carte['rarete'], {}).get('color', 0xFFFFFF)
+        )
+        embed.set_image(url=carte['image'])
+        embed.set_footer(text="Utilise les boutons pour naviguer dans la collection.")
+        return embed
 
 
     @discord.ui.button(label="⬅️ Précédent", style=ButtonStyle.secondary)
