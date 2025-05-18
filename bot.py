@@ -415,7 +415,9 @@ async def buy(ctx, packs: int = 1):
 
     # Sauvegarder la collection
     sauvegarder_cartes()
-
+# Sauvegarder dans le fichier
+    with open("cartes_joueurs.json", "w") as f:
+        json.dump(cartes_joueurs, f, indent=2)
     # Déduire les crédits
     try:
         supabase.table("users").update({"total_credits": total_credits - packs}).eq("user_id", user_id).execute()
