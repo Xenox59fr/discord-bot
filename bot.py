@@ -37,10 +37,6 @@ class SaisonView(View):
 
     @discord.ui.button(label="📅 Saison 0", style=discord.ButtonStyle.primary)
     async def saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Empêcher les autres utilisateurs d'utiliser le bouton
-        if str(interaction.user.id) != self.user_id:
-            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
-            return
 
         cartes = joueurs_cartes.get(self.user_id, [])
         saison_cartes = [c for c in cartes if c.get("saison") == "0"]
@@ -628,9 +624,7 @@ class CollectionView(View):
 
     @discord.ui.button(label="Suivant ➡️", style=ButtonStyle.secondary)
     async def suivant(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if str(interaction.user.id) != self.user_id:
-            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
-            return
+        
         self.index = (self.index + 1) % len(self.cartes)
         await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
