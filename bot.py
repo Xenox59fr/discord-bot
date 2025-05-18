@@ -537,6 +537,25 @@ async def collection(ctx):
 
     view = SaisonView(user_id, cartes)
     await ctx.send("Voici tes collections disponibles :", view=view)
+    # Récupération brute
+cartes = joueurs_cartes.get(user_id, [])
+
+# Compter les occurrences par ID
+counter = Counter(c["id"] for c in cartes)
+
+# Récupérer les cartes uniques
+cartes_uniques = {}
+for c in cartes:
+    if c["id"] not in cartes_uniques:
+        cartes_uniques[c["id"]] = c
+
+# Préparer la liste des cartes avec quantité
+cartes_fusionnees = []
+for card_id, count in counter.items():
+    carte = cartes_uniques[card_id]
+    carte = dict(carte)  # copier pour ne pas modifier original
+    carte["quantite"] = count
+    cartes_fusionnees.append(carte)
 
 class SaisonView(View):
     def __init__(self, user_id, cartes):
@@ -553,7 +572,7 @@ class SaisonView(View):
             await interaction.response.send_message("📭 Tu n’as encore aucune carte de la Saison 0.")
             return
 
-        view = CollectionView(self.user_id, saison_cartes)
+        view = CollectionView(self.user_id, cartes_fusionnees)
         embed = view.get_embed()
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
@@ -566,14 +585,21 @@ class CollectionView(View):
         self.index = 0  # carte affichée
 
     def get_embed(self):
-        carte = self.cartes[self.index]
-        embed = Embed(
-            title=f"Carte {self.index + 1}/{len(self.cartes)} : {carte['nom']} ({carte['rarete'].capitalize()})",
-            color=RARITY_SETTINGS.get(carte['rarete'], {}).get('color', 0xFFFFFF)
-        )
-        embed.set_image(url=carte['image'])
-        embed.set_footer(text=f"Utilise les boutons pour naviguer dans ta collection.")
-        return embed
+    carte = self.cartes[self.index]
+    quantite = carte.get("quantite", 1)
+
+    titre = f"Carte {self.index + 1}/{len(self.cartes)} : {carte['nom']} ({carte['rarete'].capitalize()})"
+    if quantite > 1:
+        titre = f"{titre}  •  x{quantite}"
+
+    embed = Embed(
+        title=titre,
+        color=RARITY_SETTINGS.get(carte['rarete'], {}).get('color', 0xFFFFFF)
+    )
+    embed.set_image(url=carte['image'])
+    embed.set_footer(text="Utilise les boutons pour naviguer dans la collection.")
+    return embed
+
 
     @discord.ui.button(label="⬅️ Précédent", style=ButtonStyle.secondary)
     async def precedent(self, interaction: discord.Interaction, button: discord.ui.Button):
