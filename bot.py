@@ -521,12 +521,14 @@ async def collection(ctx):
 
     cartes = cartes_joueurs[user_id]
     view = Saison0View(cartes, user_id)
-    await ctx.send(f"Voici la sublime collection de **{ctx.author.name}**.\nClique sur le bouton pour afficher tes cartes de la Saison 0 📖",
+    await ctx.send(
+        f"Voici la sublime collection de **{ctx.author.name}**.\nClique sur le bouton pour afficher tes cartes de la Saison 0 📖",
         view=view
     )
-   print("Cartes du joueur :", cartes)
-   for carte in cartes:
-       print(f"{carte['id']} — season: {carte.get('season')}")
+
+    print("Cartes du joueur :", cartes)
+    for carte in cartes:
+        print(f"{carte['id']} — season: {carte.get('season')}")
 
 
 
