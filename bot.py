@@ -350,6 +350,22 @@ async def buy(ctx, packs: int = 1):
 
     user_id = str(ctx.author.id)
 
+    # Exemple d'ajout d'une carte à un joueur
+def ajouter_carte_a_joueur(user_id, carte):
+    try:
+        with open("cartes_joueurs.json", "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+
+    if user_id not in data:
+        data[user_id] = []
+
+    data[user_id].append(carte)
+
+    with open("cartes_joueurs.json", "w") as f:
+        json.dump(data, f, indent=4)
+
     # Charger les cartes disponibles DÈS LE DÉBUT
     try:
         with open("cartes.json", "r") as f:
