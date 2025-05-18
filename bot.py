@@ -525,7 +525,7 @@ async def collection(ctx):
     # Requête Supabase pour récupérer toutes les cartes du joueur
     try:
         response = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
-        cartes = response.data
+        cartes = response.data  # Liste des cartes brutes
     except Exception as e:
         await ctx.send("❌ Erreur lors de la récupération de ta collection.")
         print(e)
@@ -535,28 +535,24 @@ async def collection(ctx):
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
 
-    view = SaisonView(user_id, cartes)
+    # Compter les occurrences par ID de carte
+    counter = Counter(c["card_id"] for c in cartes)
+
+    # Récupérer une carte unique par ID
+    cartes_uniques = {}
+    for c in cartes:
+        if c["card_id"] not in cartes_uniques:
+            cartes_uniques[c["card_id"]] = c
+
+    # Fusionner en une liste avec quantité
+    cartes_fusionnees = []
+    for card_id, count in counter.items():
+        carte = dict(cartes_uniques[card_id])  # copie pour éviter modif originale
+        carte["quantite"] = count
+        cartes_fusionnees.append(carte)
+
+    view = SaisonView(user_id, cartes_fusionnees)
     await ctx.send("Voici tes collections disponibles :", view=view)
-    # Récupération brute
-cartes = joueurs_cartes.get(user_id, [])
-
-# Compter les occurrences par ID
-counter = Counter(c["id"] for c in cartes)
-
-# Récupérer les cartes uniques
-cartes_uniques = {}
-for c in cartes:
-    if c["id"] not in cartes_uniques:
-        cartes_uniques[c["id"]] = c
-
-# Préparer la liste des cartes avec quantité
-cartes_fusionnees = []
-for card_id, count in counter.items():
-    carte = cartes_uniques[card_id]
-    carte = dict(carte)  # copier pour ne pas modifier original
-    carte["quantite"] = count
-    cartes_fusionnees.append(carte)
-
 class SaisonView(View):
     def __init__(self, user_id, cartes):
         super().__init__(timeout=60)
