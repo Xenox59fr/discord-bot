@@ -357,6 +357,9 @@ def ajouter_carte_a_joueur(user_id, carte):
             data = json.load(f)
     except FileNotFoundError:
         data = {}
+        ajouter_carte_a_joueur(str(ctx.author.id), carte_achetee)
+
+
 
     if user_id not in data:
         data[user_id] = []
