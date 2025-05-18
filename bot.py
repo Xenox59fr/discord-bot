@@ -342,6 +342,13 @@ def tirer_rarete():
     return "commun"
 
 
+import json
+import random
+import math
+import discord
+from discord.ext import commands
+from discord.ui import View, button
+
 @bot.command()
 async def buy(ctx, packs: int = 1):
     if packs < 1 or packs > 10:
@@ -350,37 +357,7 @@ async def buy(ctx, packs: int = 1):
 
     user_id = str(ctx.author.id)
 
-    # Exemple d'ajout d'une carte à un joueur
-def ajouter_carte_a_joueur(user_id, carte):
-    try:
-        with open("cartes_joueurs.json", "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        data = {}
-        ajouter_carte_a_joueur(str(ctx.author.id), carte_achetee)
-
-
-
-    if user_id not in data:
-        data[user_id] = []
-
-    data[user_id].append(carte)
-
-    with open("cartes_joueurs.json", "w") as f:
-        json.dump(data, f, indent=4)
-        
- carte_achetee = {
-    "id": carte["id"],
-    "nom": carte["nom"],
-    "image": carte.get("image", ""),
-    "rarete": carte["rarete"],
-    "season": "0"
-}
-
-ajouter_carte_a_joueur(str(ctx.author.id), carte_achetee)
-
-
-    # Charger les cartes disponibles DÈS LE DÉBUT
+    # Charger les cartes disponibles
     try:
         with open("cartes.json", "r") as f:
             all_cards = json.load(f)
@@ -399,6 +376,20 @@ ajouter_carte_a_joueur(str(ctx.author.id), carte_achetee)
     if total_credits < packs:
         await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
         return
+
+    # Fonction pour tirer une rareté aléatoire (tu dois avoir ta propre fonction tirer_rarete)
+    def tirer_rarete():
+        # Exemple basique, adapte ta propre logique
+        chances = {
+            "commun": 50,
+            "rare": 25,
+            "epique": 15,
+            "legendaire": 7,
+            "unique": 2,
+            "collab": 1  # Met à jour selon ta logique
+        }
+        choix = random.choices(list(chances.keys()), weights=chances.values(), k=1)
+        return choix[0]
 
     # Tirer les cartes
     tirages = []
@@ -430,7 +421,7 @@ ajouter_carte_a_joueur(str(ctx.author.id), carte_achetee)
             "nom": carte["nom"],
             "image": carte.get("image", ""),
             "rarete": carte["rarete"],
-            "saison": "0"
+            "season": "0"   # ici il faut "season", pas "saison"
         })
 
     with open("cartes_joueurs.json", "w") as f:
@@ -490,6 +481,7 @@ ajouter_carte_a_joueur(str(ctx.author.id), carte_achetee)
         embed.set_footer(text=f"ID: {carte['id']}")
         embed.set_image(url=carte.get("image", "https://github.com/Xenox59fr/discord-bot/tree/main/SAISON_0"))
         await ctx.send(embed=embed)
+
 
 
 @bot.command()
