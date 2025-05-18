@@ -464,20 +464,26 @@ async def buy(ctx, packs: int = 1):
             "season": "0"
         })
 
-    try:
-        supabase.table("cartes").insert(to_insert).execute()
-    except Exception:
-        await ctx.send("❌ Erreur lors de l'enregistrement des cartes dans Supabase.")
-        return
+    # Récupère le solde actuel
+try:
+    response = supabase.table("users").select("solde").eq("user_id", user_id).single().execute()
+    solde = response.data["solde"]
+except Exception:
+    await ctx.send("❌ Erreur : impossible de récupérer ton solde.")
+    return
 
-    with open("cartes_joueurs.json", "w") as f:
-        json.dump(cartes_joueurs, f, indent=2)
+# Vérifie le solde
+if solde < packs:
+    await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
+    return
 
-    try:
-        supabase.table("users").update({"total_credits": total_credits - packs}).eq("user_id", user_id).execute()
-    except Exception:
-        await ctx.send("❌ Erreur lors de la mise à jour de tes crédits.")
-        return
+# Décrémente uniquement le solde (PAS le total_credits)
+try:
+    supabase.table("users").update({"solde": solde - packs}).eq("user_id", user_id).execute()
+except Exception:
+    await ctx.send("❌ Erreur lors de la mise à jour de ton solde.")
+    return
+
 
     try:
         current = supabase.table("defi").select("tirages").eq("id", "global").execute().data[0]["tirages"]
