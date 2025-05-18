@@ -12,7 +12,8 @@ from discord.ui import Button, View
 import math
 from discord import Embed
 from discord import ui
-from discord.ui import View, button, ButtonStyle
+from discord.ui import View, button  
+from discord import ButtonStyle      
 
 
 
