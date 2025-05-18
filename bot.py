@@ -661,33 +661,33 @@ async def leaderboard(ctx):
         
 @bot.command()
 @commands.has_permissions(manage_guild=True)
-async def addcredits(ctx, member: discord.Member, amount: int):
-    if amount <= 0:
+async def addcredits(ctx, membre: discord.Member, montant: int):
+    if montant <= 0:
         await ctx.send("❌ Le montant doit être supérieur à 0.")
         return
 
-    user_id = str(member.id)
+    user_id = str(membre.id)
 
     try:
-        response = supabase.table("users").select("solde").eq("user_id", user_id).single().execute()
-        data = response.data
-
-        if data:
-            solde = data["solde"] + amount
-            supabase.table("users").update({
-                "solde": solde
-            }).eq("user_id", user_id).execute()
+        # Vérifie si l'utilisateur existe déjà
+        response = supabase.table("users").select("*").eq("user_id", user_id).single().execute()
+        if response.data:
+            solde_actuel = response.data["solde"]
+            new_solde = solde_actuel + montant
+            supabase.table("users").update({"solde": new_solde}).eq("user_id", user_id).execute()
         else:
+            # Si l'utilisateur n'existe pas encore, on le crée
             supabase.table("users").insert({
                 "user_id": user_id,
-                "solde": amount,
-                "total_credits": 0
+                "solde": montant,
+                "total_credits": 0  # ou montant si tu veux que ça compte aussi
             }).execute()
 
-        await ctx.send(f"✅ {member.mention} a reçu **{amount} crédits** (don).")
+        await ctx.send(f"✅ {montant} crédits ont été ajoutés à {membre.mention}.")
     except Exception as e:
         print(e)
-        await ctx.send("❌ Erreur lors de l'attribution des crédits.")
+        await ctx.send("❌ Une erreur est survenue lors de l'ajout des crédits.")
+
 
 
 
