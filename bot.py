@@ -341,14 +341,6 @@ def tirer_rarete():
             return rarete
     return "commun"
 
-
-import json
-import random
-import math
-import discord
-from discord.ext import commands
-from discord.ui import View, button
-
 @bot.command()
 async def buy(ctx, packs: int = 1):
     if packs < 1 or packs > 10:
@@ -469,23 +461,23 @@ async def buy(ctx, packs: int = 1):
         }
     }
 
-embed = discord.Embed(
-    title=f"🎁 Tu as acheté {packs} pack(s) !",
-    description="Voici tes cartes tirées :",
-    color=0x3498DB
-)
-embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
+    embed = discord.Embed(
+        title=f"🎁 Tu as acheté {packs} pack(s) !",
+        description="Voici tes cartes tirées :",
+        color=0x3498DB
+    )
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
 
-for rarete, carte in tirages:
-    data = rarity_data.get(rarete, {})
-    emoji = data.get("emoji", "")
-    phrase = data.get("phrase", "")
-    embed.add_field(name=f"{emoji} {carte['nom']} ({rarete.upper()})", value=phrase, inline=False)
+    for rarete, carte in tirages:
+        data = rarity_data.get(rarete, {})
+        emoji = data.get("emoji", "")
+        phrase = data.get("phrase", "")
+        embed.add_field(name=f"{emoji} {carte['nom']} ({rarete.upper()})", value=phrase, inline=False)
 
-if tirages:
-    embed.set_image(url=tirages[0][1].get("image", ""))
+    if tirages:
+        embed.set_image(url=tirages[0][1].get("image", ""))
 
-await ctx.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
 
