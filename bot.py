@@ -458,7 +458,7 @@ async def buy(ctx, packs: int = 1):
         )
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
         embed.set_footer(text=f"ID: {carte['id']}")
-        embed.set_image(url=carte.get("image", "https://example.com/default_image.png"))
+        embed.set_image(url=carte.get("image", "https://github.com/Xenox59fr/discord-bot/tree/main/SAISON_0"))
         await ctx.send(embed=embed)
 
 
