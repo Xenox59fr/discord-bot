@@ -521,22 +521,28 @@ async def givecredits(ctx):
 @bot.command()
 async def collection(ctx):
     user_id = str(ctx.author.id)
-    cartes = joueurs_cartes.get(user_id, [])
+
+    # Requête Supabase pour récupérer toutes les cartes du joueur
+    try:
+        response = supabase.table("cartes").select("*").eq("user_id", user_id).execute()
+        cartes = response.data
+    except Exception as e:
+        await ctx.send("❌ Erreur lors de la récupération de ta collection.")
+        print(e)
+        return
 
     if not cartes:
         await ctx.send("📭 Tu n’as encore aucune carte dans ta collection.")
         return
 
-    view = SaisonView(user_id)
+    view = SaisonView(user_id, cartes)
     await ctx.send("Voici tes collections disponibles :", view=view)
 
-
-
-
 class SaisonView(View):
-    def __init__(self, user_id):
+    def __init__(self, user_id, cartes):
         super().__init__(timeout=60)
         self.user_id = user_id
+        self.cartes = cartes  # 👈 Stocke toutes les cartes de Supabase
 
     @discord.ui.button(label="📅 Saison 0", style=discord.ButtonStyle.primary)
     async def saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -544,8 +550,7 @@ class SaisonView(View):
             await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
             return
 
-        cartes = joueurs_cartes.get(self.user_id, [])
-        saison_cartes = [c for c in cartes if c.get("saison") == "0"]
+        saison_cartes = [c for c in self.cartes if c.get("season") == "0"]
 
         if not saison_cartes:
             await interaction.response.send_message("📭 Tu n’as encore aucune carte de la Saison 0.")
