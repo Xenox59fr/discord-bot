@@ -528,7 +528,7 @@ class Saison0View(View):
 
     @button(label="Saison 0", style=discord.ButtonStyle.primary)
     async def show_saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
-        saison0_cartes = [c for c in self.all_cartes if c.get("season") == "0"]
+        saison0_cartes = [c for c in self.all_cartes if c.get("saison") == "0"]
         if not saison0_cartes:
             await interaction.response.send_message("❌ Aucune carte pour la Saison 0.", ephemeral=True)
             return
