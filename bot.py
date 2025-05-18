@@ -13,7 +13,9 @@ import math
 from discord import Embed
 from discord import ui
 from discord.ui import View, button  
-from discord import ButtonStyle      
+from discord import ButtonStyle   
+from collections import Counter
+
 
 
 
