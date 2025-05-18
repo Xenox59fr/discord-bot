@@ -555,19 +555,17 @@ async def collection(ctx):
 
     view = SaisonView(user_id, cartes_fusionnees)
     await ctx.send("Voici tes collections disponibles :", view=view)
+    
 class SaisonView(View):
     def __init__(self, user_id, cartes):
         super().__init__(timeout=60)
         self.user_id = user_id
-        self.cartes = cartes  # 👈 Stocke toutes les cartes de Supabase
+        self.cartes = cartes
 
     @discord.ui.button(label="📅 Saison 0", style=discord.ButtonStyle.primary)
     async def saison0(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if str(interaction.user.id) != self.user_id:
-            await interaction.response.send_message("❌ Ce bouton ne t'est pas destiné.", ephemeral=True)
-            return
+        # Suppression du contrôle d'accès sur user_id pour que tout le monde puisse cliquer
 
-        # Requête Supabase pour récupérer toutes les cartes de la saison 0
         try:
             response = supabase.table("cartes").select("*").eq("user_id", self.user_id).eq("season", "0").execute()
             cartes = response.data
@@ -577,14 +575,12 @@ class SaisonView(View):
             return
 
         if not cartes:
-            await interaction.response.send_message("📭 Tu n’as encore aucune carte de la Saison 0.")
+            await interaction.response.send_message("📭 Cette personne n’a aucune carte de la Saison 0.")
             return
 
-        # Compter les occurrences par card_id
         from collections import Counter
         counter = Counter(c["card_id"] for c in cartes)
 
-        # Ne garder qu'une seule occurrence par carte, en ajoutant une clé "quantite"
         cartes_uniques = {}
         for c in cartes:
             if c["card_id"] not in cartes_uniques:
