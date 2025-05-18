@@ -350,7 +350,15 @@ async def buy(ctx, packs: int = 1):
 
     user_id = str(ctx.author.id)
 
-    # Récupérer les crédits
+    # Charger les cartes disponibles DÈS LE DÉBUT
+    try:
+        with open("cartes.json", "r") as f:
+            all_cards = json.load(f)
+    except FileNotFoundError:
+        await ctx.send("❌ Erreur : fichier de cartes introuvable.")
+        return
+
+    # Vérifier crédits
     try:
         response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
         total_credits = response.data["total_credits"]
@@ -375,27 +383,7 @@ async def buy(ctx, packs: int = 1):
         await ctx.send("❌ Aucune carte n'a été tirée.")
         return
 
-    # Initialiser la collection si besoin
-    if user_id not in joueurs_cartes:
-        joueurs_cartes[user_id] = []
-
-    # Ajouter toutes les cartes tirées à la collection du joueur
-    for rarete, carte in tirages:
-        joueurs_cartes[user_id].append({
-            "id": carte["id"],
-            "nom": carte["nom"],
-            "image": carte.get("image", ""),
-            "rarete": carte["rarete"],
-            "saison": "0"
-        })
-         # Charger les cartes disponibles
-    with open("cartes.json", "r") as f:
-        all_cards = json.load(f)
-
-    # Tirage aléatoire
-    nouvelle_carte = random.choice(all_cards)
-
-    # Charger ou créer cartes_joueurs
+    # Charger ou créer cartes_joueurs.json
     try:
         with open("cartes_joueurs.json", "r") as f:
             cartes_joueurs = json.load(f)
@@ -405,19 +393,19 @@ async def buy(ctx, packs: int = 1):
     if user_id not in cartes_joueurs:
         cartes_joueurs[user_id] = []
 
-    cartes_joueurs[user_id].append(nouvelle_carte)
+    # Ajouter les cartes au fichier
+    for _, carte in tirages:
+        cartes_joueurs[user_id].append({
+            "id": carte["id"],
+            "nom": carte["nom"],
+            "image": carte.get("image", ""),
+            "rarete": carte["rarete"],
+            "saison": "0"
+        })
 
-    # Sauvegarder dans le fichier
     with open("cartes_joueurs.json", "w") as f:
         json.dump(cartes_joueurs, f, indent=2)
 
-    await ctx.send(f"🎉 Tu as obtenu **{nouvelle_carte['nom']}** !")
-
-    # Sauvegarder la collection
-    sauvegarder_cartes()
-# Sauvegarder dans le fichier
-    with open("cartes_joueurs.json", "w") as f:
-        json.dump(cartes_joueurs, f, indent=2)
     # Déduire les crédits
     try:
         supabase.table("users").update({"total_credits": total_credits - packs}).eq("user_id", user_id).execute()
@@ -432,7 +420,7 @@ async def buy(ctx, packs: int = 1):
     except Exception:
         pass
 
-    # Infos de raretés
+    # Texte pour chaque rareté
     rarity_data = {
         "commun": {
             "emoji": "⚪", "color": 0xB0B0B0,
@@ -460,7 +448,7 @@ async def buy(ctx, packs: int = 1):
         }
     }
 
-    # Envoi des cartes tirées en embed
+    # Affichage des cartes tirées
     for rarete, carte in tirages:
         data = rarity_data.get(rarete, {})
         embed = discord.Embed(
@@ -471,13 +459,7 @@ async def buy(ctx, packs: int = 1):
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
         embed.set_footer(text=f"ID: {carte['id']}")
         embed.set_image(url=carte.get("image", "https://example.com/default_image.png"))
-
         await ctx.send(embed=embed)
-                # Sauvegarde la carte pour le joueur
-        user_id = str(ctx.author.id)
-        if user_id not in joueurs_cartes:
-            joueurs_cartes[user_id] = []
-        joueurs_cartes[user_id].append(carte)
 
 
 @bot.command()
