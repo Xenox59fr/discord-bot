@@ -16,6 +16,9 @@ from discord.ui import View, button
 from discord import ButtonStyle   
 from collections import Counter
 from threading import Thread
+from server import keep_alive
+
+keep_alive()
 
 
 joueurs_cartes = {}
