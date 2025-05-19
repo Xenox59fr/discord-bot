@@ -692,6 +692,78 @@ async def addcredits(ctx, membre: discord.Member, montant: int):
     except Exception as e:
         print("Erreur Supabase :", e)
         await ctx.send("❌ Une erreur est survenue lors de l'ajout des crédits.")
+        
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def givecard(ctx, member: discord.Member, card_id: str):
+    user_id = str(member.id)
+
+    try:
+        with open("cartes.json", "r") as f:
+            all_cards = json.load(f)
+    except FileNotFoundError:
+        await ctx.send("❌ Fichier cartes.json introuvable.")
+        return
+
+    carte = next((c for c in all_cards if c["id"] == card_id), None)
+    if not carte:
+        await ctx.send("❌ Carte introuvable.")
+        return
+
+    try:
+        supabase.table("cartes").insert([{
+            "user_id": user_id,
+            "card_id": carte["id"],
+            "nom": carte["nom"],
+            "image": carte.get("image", ""),
+            "rarete": carte["rarete"],
+            "season": "0"
+        }]).execute()
+    except Exception:
+        await ctx.send("❌ Erreur lors de l'ajout de la carte.")
+        return
+
+    await ctx.send(f"✅ Carte **{carte['nom']}** donnée à {member.mention}.")
+    
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def giveall(ctx, card_id: str):
+    try:
+        with open("cartes.json", "r") as f:
+            all_cards = json.load(f)
+    except FileNotFoundError:
+        await ctx.send("❌ Fichier cartes.json introuvable.")
+        return
+
+    carte = next((c for c in all_cards if c["id"] == card_id), None)
+    if not carte:
+        await ctx.send("❌ Carte introuvable.")
+        return
+
+    try:
+        users = supabase.table("users").select("user_id").execute().data
+    except Exception:
+        await ctx.send("❌ Erreur lors de la récupération des utilisateurs.")
+        return
+
+    insertions = [{
+        "user_id": user["user_id"],
+        "card_id": carte["id"],
+        "nom": carte["nom"],
+        "image": carte.get("image", ""),
+        "rarete": carte["rarete"],
+        "season": "0"
+    } for user in users]
+
+    try:
+        supabase.table("cartes").insert(insertions).execute()
+    except Exception:
+        await ctx.send("❌ Erreur lors de l'ajout des cartes.")
+        return
+
+    await ctx.send(f"✅ Carte **{carte['nom']}** donnée à **{len(users)} joueurs**.")
+
+
 
 
 
