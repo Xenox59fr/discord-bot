@@ -237,13 +237,14 @@ async def credits(ctx):
     user_id = str(ctx.author.id)
 
     try:
-        response = supabase.table("users").select("total_credits").eq("user_id", user_id).single().execute()
-        total_credits = response.data["total_credits"]
+        response = supabase.table("users").select("solde, total_credits").eq("user_id", user_id).single().execute()
+        solde = response.data["solde"]
+        total = response.data["total_credits"]
     except Exception as e:
         await ctx.send("❌ Erreur : impossible de récupérer tes crédits.")
         return
 
-    await ctx.send(f"💰 Tu as **{total_credits} crédits**.")
+    await ctx.send(f"💰 Tu as **{solde} crédits** disponibles.\n🏅 Total cumulés (classement) : **{total} crédits**.")
 
 
 
