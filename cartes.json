@@ -166,5 +166,19 @@
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/zorath.png",
     "rarete": "rare",
     "season": "0"
+  },
+  {
+    "id": "darkjason",
+    "nom": "darkjason",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/darkjason.png",
+    "rarete": "limite",
+    "season": "0"
+  },
+  {
+    "id": "jasonn",
+    "nom": "jasonn",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/jasonn.png",
+    "rarete": "limite",
+    "season": "0"
   }
 ]
