@@ -773,7 +773,7 @@ async def giveall(ctx, card_id: str):
 
 @bot.command()
 @commands.is_owner()  # Pour que seul le propriétaire du bot puisse utiliser cette commande
-async def giveall(ctx, montant: int):
+async def giveallcredits(ctx, montant: int):
     if montant <= 0:
         await ctx.send("❌ Montant invalide. Utilise un nombre positif.")
         return
