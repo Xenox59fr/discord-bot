@@ -389,10 +389,14 @@ class CardPaginator(View):
         return embed
 
 @bot.command()
-async def buy(ctx, packs: int = 10000000000):
+async def buy(ctx, packs: int = 1):
     if packs < 1 or packs > 10:
         await ctx.send("🛑 Tu peux acheter entre 1 et 10 packs maximum.")
         return
+        
+    prix_par_pack = 3  # ← ici tu choisis ton prix
+    cout_total = packs * prix_par_pack
+
 
     user_id = str(ctx.author.id)
 
@@ -411,9 +415,11 @@ async def buy(ctx, packs: int = 10000000000):
         await ctx.send("❌ Erreur : impossible de récupérer tes crédits.")
         return
 
-    if solde < packs:
-        await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {packs} crédit(s).")
-        return
+    if solde < cout_total:
+       await ctx.send(f"💸 Tu n'as pas assez de crédits. Il te faut {cout_total} crédit(s).")
+       return
+
+
 
     def tirer_rarete():
         chances = {
@@ -475,7 +481,7 @@ async def buy(ctx, packs: int = 10000000000):
         json.dump(cartes_joueurs, f, indent=2)
 
     try:
-        supabase.table("users").update({"solde": solde - packs}).eq("user_id", user_id).execute()
+        supabase.table("users").update({"solde": solde - cout_total}).eq("user_id", user_id).execute()
     except Exception:
         await ctx.send("❌ Erreur lors de la mise à jour de ton solde.")
         return
