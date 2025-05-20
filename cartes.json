@@ -180,5 +180,12 @@
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/jasonn.png",
     "rarete": "limite",
     "season": "0"
+  },
+  {
+    "id": "darkguts",
+    "nom": "darkguts",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/darkguts.png",
+    "rarete": "limite",
+    "season": "0"
   }
 ]
