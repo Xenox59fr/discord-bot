@@ -389,7 +389,7 @@ class CardPaginator(View):
         return embed
 
 @bot.command()
-async def buy(ctx, packs: int = 1):
+async def buy(ctx, packs: int = 10000000000):
     if packs < 1 or packs > 10:
         await ctx.send("🛑 Tu peux acheter entre 1 et 10 packs maximum.")
         return
