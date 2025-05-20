@@ -394,7 +394,7 @@ async def buy(ctx, packs: int = 1):
         await ctx.send("🛑 Tu peux acheter entre 1 et 10 packs maximum.")
         return
         
-    prix_par_pack = 3  # ← ici tu choisis ton prix
+    prix_par_pack = 100 # ← ici tu choisis ton prix
     cout_total = packs * prix_par_pack
 
 
