@@ -771,6 +771,50 @@ async def giveall(ctx, card_id: str):
 
     await ctx.send(f"✅ Carte **{carte['nom']}** donnée à **{len(users)} joueurs**.")
 
+@bot.command()
+@commands.is_owner()  # Pour que seul le propriétaire du bot puisse utiliser cette commande
+async def giveall(ctx, montant: int):
+    if montant <= 0:
+        await ctx.send("❌ Montant invalide. Utilise un nombre positif.")
+        return
+
+    try:
+        users_data = supabase.table("users").select("user_id, solde, total_credits").execute().data
+
+        mentions = []
+        for user in users_data:
+            user_id = user["user_id"]
+            new_solde = user["solde"] + montant
+            new_total = user["total_credits"] + montant
+
+            supabase.table("users").update({
+                "solde": new_solde,
+                "total_credits": new_total
+            }).eq("user_id", user_id).execute()
+
+            # Tente de récupérer l'utilisateur pour la mention
+            member = ctx.guild.get_member(int(user_id))
+            if member:
+                mentions.append(member.mention)
+
+        embed = discord.Embed(
+            title="💸 Crédits distribués !",
+            description=f"**{montant} crédits** ont été donnés à **{len(users_data)}** membres !",
+            color=discord.Color.green()
+        )
+
+        if mentions:
+            embed.add_field(name="Utilisateurs notifiés :", value="\n".join(mentions[:20]), inline=False)
+            if len(mentions) > 20:
+                embed.set_footer(text=f"+ {len(mentions) - 20} autres non affichés.")
+
+        await ctx.send(embed=embed)
+
+    except Exception as e:
+        print(e)
+        await ctx.send("❌ Une erreur est survenue pendant la distribution des crédits.")
+
+
 
 
 
