@@ -272,6 +272,8 @@ async def daily(ctx):
         seconds = remaining % 60
         await ctx.send(f"{ctx.author.mention}, tu as déjà réclamé tes crédits quotidiens. Reviens dans {hours}h {minutes}m {seconds}s ⏳.")
 
+last_credit_time = {}
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -283,15 +285,11 @@ async def on_message(message):
 
     last_time = last_credit_time.get(user_id)
     if last_time is None or (now - last_time).total_seconds() >= 60:
-        try:
-            add_credits(user_id, 3)  # <- ici on donne 3 crédits
-            print(f"Ajout de 3 crédits à l'utilisateur {user_id}")
-        except Exception as e:
-            print(f"Erreur lors de l'ajout de crédits : {e}")
-
+        add_credits(user_id, 3)  # max 3 crédits toutes les 60 sec par utilisateur
         last_credit_time[user_id] = now
 
     await bot.process_commands(message)
+
 
 # Raretés, couleurs, messages et probabilités
 RARITY_SETTINGS = {
