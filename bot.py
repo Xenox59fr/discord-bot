@@ -301,7 +301,7 @@ async def on_message(message):
 
     last_time = last_credit_time.get(user_id)
     if last_time is None or (now - last_time).total_seconds() >= 60:
-        add_credits(user_id, 3)  # max 3 crédits toutes les 60 sec par utilisateur
+        add_credits(user_id, 2)  # max 3 crédits toutes les 60 sec par utilisateur
         last_credit_time[user_id] = now
 
     await bot.process_commands(message)
