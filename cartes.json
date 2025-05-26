@@ -187,5 +187,117 @@
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/darkguts.png",
     "rarete": "limite",
     "season": "0"
+  },
+  {
+    "id": "eclatdombre",
+    "nom": "eclatdombre",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/eclatdombre.png",
+    "rarete": "commun",
+    "season": "0"
+  },
+  {
+    "id": "gargouille",
+    "nom": "gargouille",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/gargouille.png",
+    "rarete": "rare",
+    "season": "0"
+  }, 
+  {
+    "id": "kharog",
+    "nom": "kharog",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/kharog.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "lamespectrale",
+    "nom": "lamespectrale",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/lamespectrale.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "lyama",
+    "nom": "lyama",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/lyama.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "moinebrisé",
+    "nom": "moinebrisé",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/moinebrisé.png",
+    "rarete": "commun",
+    "season": "0"
+  },
+  {
+    "id": "murmure",
+    "nom": "murmure",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/murmure.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "nyxblade",
+    "nom": "nyxblade",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/nyxblade.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "orkina",
+    "nom": "orkina",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/orkina.png",
+    "rarete": "commun",
+    "season": "0"
+  },
+  {
+    "id": "sculpteurdos",
+    "nom": "sculpteurdos",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/sculpteurdos.png",
+    "rarete": "commun",
+    "season": "0"
+  },
+  {
+    "id": "silureabime",
+    "nom": "silureabime",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/silureabime.png",
+    "rarete": "commun",
+    "season": "0"
+  },
+  {
+    "id": "skarrox",
+    "nom": "skarrox",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/skarrox.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "thalrik",
+    "nom": "thalrik",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/thalrik.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "vaelgor",
+    "nom": "vaelgor",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/vaelgor.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "velora",
+    "nom": "velora",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/velora.png",
+    "rarete": "rare",
+    "season": "0"
+  },
+  {
+    "id": "verrouilleur",
+    "nom": "verrouilleur",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/verrouilleur.png",
+    "rarete": "commun",
+    "season": "0"
   }
 ]
