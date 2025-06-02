@@ -157,6 +157,14 @@ cartes_disponibles = [
     {"id": "vaelgor", "nom": "vaelgor", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/vaelgor.png", "rarete": "rare"},
     {"id": "velora", "nom": "velora", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/velora.png", "rarete": "rare"},
     {"id": "verrouilleur", "nom": "verrouilleur", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/verrouilleur.png", "rarete": "commun"},
+    {"id": "avelora", "nom": "avelora", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/avelora.png", "rarete": "epique"},
+    {"id": "drakhan", "nom": "drakhan", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/drakhan.png", "rarete": "epique"},
+    {"id": "eronevolutif", "nom": "eronevolutif", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/eronevolutif.png", "rarete": "legendaire"},
+    {"id": "korthos", "nom": "verrouilleur", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/korthos.png", "rarete": "epique"},
+    {"id": "nerha", "nom": "nerha", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/nerha.png", "rarete": "legendaire"},
+    {"id": "neroth", "nom": "verrouilleur", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/neroth.png", "rarete": "legendaire"},
+    {"id": "vaelgrim", "nom": "vaelgrim", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/vaelgrim.png", "rarete": "epique"},
+    {"id": "vëlmorg", "nom": "vëlmorg", "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/vëlmorg.png", "rarete": "epique"},
 ]
 
 @bot.event
@@ -412,7 +420,7 @@ async def buy(ctx, packs: int = 1):
         await ctx.send("🛑 Tu peux acheter entre 1 et 10 packs maximum.")
         return
         
-    prix_par_pack = 100 # ← ici tu choisis ton prix
+    prix_par_pack = 50 # ← ici tu choisis ton prix
     cout_total = packs * prix_par_pack
 
 
