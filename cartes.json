@@ -299,5 +299,61 @@
     "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/verrouilleur.png",
     "rarete": "commun",
     "season": "0"
+  },
+  {
+    "id": "avelora",
+    "nom": "avelora",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/avelora.png",
+    "rarete": "epique",
+    "season": "0"
+  },
+  {
+    "id": "drakhan",
+    "nom": "drakhan",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/drakhan.png",
+    "rarete": "epique",
+    "season": "0"
+  },
+  {
+    "id": "eronevolutif",
+    "nom": "eronevolutif",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/eronevolutif.png",
+    "rarete": "legendaire",
+    "season": "0"
+  },
+  {
+    "id": "korthos",
+    "nom": "korthos",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/korthos.png",
+    "rarete": "epique",
+    "season": "0"
+  },
+  {
+    "id": "nerha",
+    "nom": "nerha",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/nerha.png",
+    "rarete": "legendaire",
+    "season": "0"
+  },
+  {
+    "id": "neroth",
+    "nom": "neroth",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/neroth.png",
+    "rarete": "legendaire",
+    "season": "0"
+  },
+  {
+    "id": "vaelgrim",
+    "nom": "vaelgrim",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/vaelgrim.png",
+    "rarete": "epique",
+    "season": "0"
+  },
+  {
+    "id": "vëlmorg",
+    "nom": "vëlmorg",
+    "image": "https://raw.githubusercontent.com/Xenox59fr/discord-bot/main/SAISON_0/vëlmorg.png",
+    "rarete": "epique",
+    "season": "0"
   }
 ]
